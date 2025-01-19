@@ -82,8 +82,10 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          await Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => const AddEditPage()));
+          await Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => AddEditPage(
+                    repository: RepositoryProviderContext.of(context).books,
+                  )));
           if (!mounted) return;
           _refresh();
         },
@@ -98,8 +100,12 @@ class _HomePageState extends State<HomePage> {
       spacing: 0,
       children: [
         InkWell(
-          onTap: () {
-
+          onTap: () async {
+            await Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => BookOverviewPage(id: _list[index].id!)));
+            if (mounted) {
+              _refresh();
+            }
           },
           child: Padding(
             padding: EdgeInsets.all(8),
@@ -118,7 +124,9 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
-        Divider(height: 1,)
+        Divider(
+          height: 1,
+        )
       ],
     );
   }
@@ -126,19 +134,33 @@ class _HomePageState extends State<HomePage> {
 
 class AddEditPage extends StatefulWidget {
   final int? id;
+  final BookRepository repository;
 
-  const AddEditPage({super.key, this.id});
+  const AddEditPage({super.key, this.id, required this.repository});
 
   @override
   State<AddEditPage> createState() => _AddEditPage();
 }
 
 class _AddEditPage extends State<AddEditPage> {
-  late BookRepository _repository;
   final _formKey = GlobalKey<FormState>();
   final _titleEditingController = TextEditingController();
   final _pageCountEditingController = TextEditingController();
   bool _isSaving = false;
+
+  _loadData() async {
+    if (widget.id == null) return;
+    final book = await widget.repository.getById(widget.id!);
+    if (book == null) return;
+    _titleEditingController.text = book.title;
+    _pageCountEditingController.text = book.pageCount.toString();
+  }
+
+  @override
+  void initState() {
+    _loadData();
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -147,27 +169,22 @@ class _AddEditPage extends State<AddEditPage> {
     super.dispose();
   }
 
-  @override
-  void didChangeDependencies() {
-    _repository = RepositoryProviderContext.of(context).books;
-    super.didChangeDependencies();
-  }
-
   _save() async {
     setState(() {
       _isSaving = true;
     });
 
     final entity = BookEntity(
+        id: widget.id,
         title: _titleEditingController.text,
         pageCount: int.parse(_pageCountEditingController.text),
         readedPageCount: 0);
 
     try {
       if (widget.id == null) {
-        await _repository.add(entity);
+        await widget.repository.add(entity);
       } else {
-        await _repository.update(entity);
+        await widget.repository.update(entity);
       }
       if (mounted) {
         Navigator.of(context).pop();
@@ -240,6 +257,107 @@ class _AddEditPage extends State<AddEditPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class BookOverviewPage extends StatefulWidget {
+  final int id;
+
+  const BookOverviewPage({super.key, required this.id});
+
+  @override
+  State<BookOverviewPage> createState() => _BookOverviewPage();
+}
+
+class _BookOverviewPage extends State<BookOverviewPage> {
+  late BookRepository _repository;
+  bool _isLoading = true;
+  BookEntity? _book = null;
+
+  @override
+  void didChangeDependencies() {
+    _repository = RepositoryProviderContext.of(context).books;
+    _refresh();
+    super.didChangeDependencies();
+  }
+
+  _refresh() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final book = await _repository.getById(widget.id);
+
+    setState(() {
+      _isLoading = false;
+      _book = book;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final readPercentage = _book != null
+        ? _book!.readedPageCount.toDouble() / _book!.pageCount.toDouble()
+        : 0.toDouble();
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        bottom: PreferredSize(
+            preferredSize: Size.fromHeight(0),
+            child: _isLoading ? LinearProgressIndicator() : Container()),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              await Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => AddEditPage(
+                        id: widget.id,
+                        repository: RepositoryProviderContext.of(context).books,
+                      )));
+              if (mounted) {
+                _refresh();
+              }
+            },
+            icon: const Icon(Icons.edit),
+            tooltip: "Edit",
+          )
+        ],
+      ),
+      body: _book == null
+          ? null
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  padding: EdgeInsets.all(16),
+                  color: Theme.of(context).colorScheme.surfaceContainer,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _book!.title,
+                        style: TextTheme.of(context).titleLarge,
+                      ),
+                      Text(
+                          "${_book!.readedPageCount} of ${_book!.pageCount} pages read"),
+                      Padding(
+                        padding: EdgeInsets.only(top: 8),
+                        child: Row(
+                          spacing: 16,
+                          children: [
+                            Expanded(
+                                child: LinearProgressIndicator(
+                              value: readPercentage,
+                            )),
+                            Text("${(readPercentage * 100).round()}%")
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
     );
   }
 }

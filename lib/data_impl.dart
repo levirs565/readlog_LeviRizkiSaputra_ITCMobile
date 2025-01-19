@@ -76,6 +76,7 @@ CREATE TABLE IF NOT EXISTS books(
       await db.execute("""
 CREATE TABLE IF NOT EXISTS read_histories(
   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  date INTEGER NOT NULL,
   book_id INTEGER NOT NULL,
   page_from INTEGER NOT NULL,
   page_to INTEGER NOT NULL,
