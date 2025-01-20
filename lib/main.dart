@@ -84,7 +84,7 @@ class _HomePageState extends State<HomePage> {
       ),
       body: ListView.builder(
         itemCount: _list.length,
-        itemBuilder: _listTile,
+        itemBuilder: (context, index) => _listTile(context, _list[index]),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
@@ -97,14 +97,14 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _listTile(BuildContext context, int index) {
+  Widget _listTile(BuildContext context, BookEntity book) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: 0,
       children: [
         InkWell(
           onTap: () async {
-            await BookOverviewPage.show(context, _list[index].id!);
+            await BookOverviewPage.show(context, book.id!);
             if (mounted) {
               _refresh();
             }
@@ -115,11 +115,11 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _list[index].title,
+                  book.title,
                   style: TextTheme.of(context).bodyLarge,
                 ),
                 Text(
-                  _list[index].pageCount.toString(),
+                  book.pageCount.toString(),
                   style: TextTheme.of(context).bodyMedium,
                 )
               ],
@@ -336,9 +336,6 @@ class _BookOverviewPage extends State<BookOverviewPage> {
 
   @override
   Widget build(BuildContext context) {
-    final readPercentage = _book != null
-        ? _book!.readedPageCount.toDouble() / _book!.pageCount.toDouble()
-        : 0.toDouble();
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -366,125 +363,134 @@ class _BookOverviewPage extends State<BookOverviewPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               spacing: 16,
               children: [
-                Container(
-                  padding: EdgeInsets.all(16),
-                  color: Theme.of(context).colorScheme.surfaceContainer,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _book!.title,
-                        style: TextTheme.of(context).titleLarge,
-                      ),
-                      Text(
-                          "${_book!.readedPageCount} of ${_book!.pageCount} pages read"),
-                      Padding(
-                        padding: EdgeInsets.only(top: 8),
-                        child: Row(
-                          spacing: 16,
-                          children: [
-                            Expanded(
-                                child: LinearProgressIndicator(
-                              value: readPercentage,
-                            )),
-                            Text("${(readPercentage * 100).round()}%")
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.all(16),
-                  color: Theme.of(context).colorScheme.surfaceContainer,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    spacing: 8,
-                    children: [
-                      Text("Read History",
-                          style: TextTheme.of(context).titleMedium),
-                      Text(_lastRead == null
-                          ? "No read history yet"
-                          : "Last read from page ${_lastRead!.pageFrom} to page ${_lastRead!.pageTo} at ${_dateFormatter.format(_lastRead!.date)}"),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        spacing: 8,
-                        children: [
-                          FilledButton(
-                              onPressed: () async {
-                                await BookAddEditHistorySheet.showAdd(
-                                    context, widget.id);
-                                if (!mounted) return;
-                                _refresh();
-                              },
-                              child: const Text("Add")),
-                          FilledButton(
-                              onPressed: () async {
-                                await BookReadHistoriesPage.show(
-                                    context, widget.id);
-                                if (!mounted) return;
-                                _refresh();
-                              },
-                              child: const Text("Show All"))
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.symmetric(vertical: 16, horizontal: 0),
-                  color: Theme.of(context).colorScheme.surfaceContainer,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    spacing: 8,
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Text("Reading Progress",
-                            textAlign: TextAlign.left,
-                            style: TextTheme.of(context).titleMedium),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                            "Add Read History to update Reading Progress",
-                            textAlign: TextAlign.left,
-                            style: TextTheme.of(context).bodySmall),
-                      ),
-                      ListView.builder(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          itemCount: _readingProgress.length,
-                          padding: EdgeInsets.all(0),
-                          itemBuilder: (context, index) => Container(
-                              color: _readingProgress[index].hasRead
-                                  ? Theme.of(context)
-                                      .colorScheme
-                                      .primaryContainer
-                                  : Theme.of(context)
-                                      .colorScheme
-                                      .errorContainer,
-                              padding: EdgeInsets.symmetric(
-                                  vertical: 8 +
-                                      ((_readingProgress[index].pageTo -
-                                              _readingProgress[index].pageFrom +
-                                              1) /
-                                          8),
-                                  horizontal: 16),
-                              child: Column(children: [
-                                Text(
-                                  "From page ${_readingProgress[index].pageFrom} to ${_readingProgress[index].pageTo}",
-                                  style: TextTheme.of(context).bodyMedium,
-                                ),
-                                Text(_readingProgress[index].hasRead
-                                    ? "Has been read"
-                                    : "Unread")
-                              ])))
-                    ],
-                  ),
-                )
+                _detailContainer(context),
+                _readHistoryContainer(context),
+                _readingProgressContainer(context),
               ],
             )),
+    );
+  }
+
+  Widget _detailContainer(BuildContext context) {
+    final readPercentage = _book!.readedPageCount.toDouble() / _book!.pageCount.toDouble();
+    return Container(
+      padding: EdgeInsets.all(16),
+      color: Theme.of(context).colorScheme.surfaceContainer,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            _book!.title,
+            style: TextTheme.of(context).titleLarge,
+          ),
+          Text(
+              "${_book!.readedPageCount} of ${_book!.pageCount} pages read"),
+          Padding(
+            padding: EdgeInsets.only(top: 8),
+            child: Row(
+              spacing: 16,
+              children: [
+                Expanded(
+                    child: LinearProgressIndicator(
+                      value: readPercentage,
+                    )),
+                Text("${(readPercentage * 100).round()}%")
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _readHistoryContainer(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(16),
+      color: Theme.of(context).colorScheme.surfaceContainer,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 8,
+        children: [
+          Text("Read History", style: TextTheme.of(context).titleMedium),
+          Text(_lastRead == null
+              ? "No read history yet"
+              : "Last read from page ${_lastRead!.pageFrom} to page ${_lastRead!.pageTo} at ${_dateFormatter.format(_lastRead!.date)}"),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            spacing: 8,
+            children: [
+              FilledButton(
+                  onPressed: () async {
+                    await BookAddEditHistorySheet.showAdd(context, widget.id);
+                    if (!mounted) return;
+                    _refresh();
+                  },
+                  child: const Text("Add")),
+              FilledButton(
+                  onPressed: () async {
+                    await BookReadHistoriesPage.show(context, widget.id);
+                    if (!mounted) return;
+                    _refresh();
+                  },
+                  child: const Text("Show All"))
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _readingProgressContainer(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 16, horizontal: 0),
+      color: Theme.of(context).colorScheme.surfaceContainer,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: 8,
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Text("Reading Progress",
+                textAlign: TextAlign.left,
+                style: TextTheme.of(context).titleMedium),
+          ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Text("Add Read History to update Reading Progress",
+                textAlign: TextAlign.left,
+                style: TextTheme.of(context).bodySmall),
+          ),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemCount: _readingProgress.length,
+            padding: EdgeInsets.all(0),
+            itemBuilder: (context, index) =>
+                _readingProgressItem(context, _readingProgress[index]),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _readingProgressItem(
+      BuildContext context, BookReadingProgressItem item) {
+    return Container(
+      color: item.hasRead
+          ? Theme.of(context).colorScheme.primaryContainer
+          : Theme.of(context).colorScheme.errorContainer,
+      padding: EdgeInsets.symmetric(
+          vertical: 8 + ((item.pageTo - item.pageFrom + 1) / 8),
+          horizontal: 16),
+      child: Column(
+        children: [
+          Text(
+            "From page ${item.pageFrom} to ${item.pageTo}",
+            style: TextTheme.of(context).bodyMedium,
+          ),
+          Text(item.hasRead ? "Has been read" : "Unread")
+        ],
+      ),
     );
   }
 }
