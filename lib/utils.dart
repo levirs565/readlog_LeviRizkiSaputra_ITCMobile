@@ -35,7 +35,7 @@ List<BookReadingProgressItem> analyzeBookReadingProgress(
   }
 
   if (result.isEmpty ||
-      (result.isNotEmpty && result.last.pageTo != pageCount)) {
+      (result.isNotEmpty && result.last.pageTo < pageCount)) {
     result.add(BookReadingProgressItem(
         hasRead: false,
         pageFrom: result.isEmpty ? 1 : result.last.pageTo + 1,
