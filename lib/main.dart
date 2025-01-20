@@ -82,10 +82,14 @@ class _HomePageState extends State<HomePage> {
             preferredSize: Size.fromHeight(0),
             child: _isLoading ? LinearProgressIndicator() : Container()),
       ),
-      body: ListView.builder(
-        itemCount: _list.length,
-        itemBuilder: (context, index) => _listTile(context, _list[index]),
-      ),
+      body: _list.isEmpty
+          ? Center(
+              child: Text("No book found"),
+            )
+          : ListView.builder(
+              itemCount: _list.length,
+              itemBuilder: (context, index) => _listTile(context, _list[index]),
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           await BookAddEditSheet.showAdd(context);
@@ -368,7 +372,8 @@ class _BookOverviewPage extends State<BookOverviewPage> {
   }
 
   Widget _detailContainer(BuildContext context) {
-    final readPercentage = _book!.readedPageCount.toDouble() / _book!.pageCount.toDouble();
+    final readPercentage =
+        _book!.readedPageCount.toDouble() / _book!.pageCount.toDouble();
     return Container(
       padding: EdgeInsets.all(16),
       color: Theme.of(context).colorScheme.surfaceContainer,
@@ -379,8 +384,7 @@ class _BookOverviewPage extends State<BookOverviewPage> {
             _book!.title,
             style: TextTheme.of(context).titleLarge,
           ),
-          Text(
-              "${_book!.readedPageCount} of ${_book!.pageCount} pages read"),
+          Text("${_book!.readedPageCount} of ${_book!.pageCount} pages read"),
           Padding(
             padding: EdgeInsets.only(top: 8),
             child: Row(
@@ -388,8 +392,8 @@ class _BookOverviewPage extends State<BookOverviewPage> {
               children: [
                 Expanded(
                     child: LinearProgressIndicator(
-                      value: readPercentage,
-                    )),
+                  value: readPercentage,
+                )),
                 Text("${(readPercentage * 100).round()}%")
               ],
             ),
@@ -542,10 +546,15 @@ class _BookReadHistoriesPage extends State<BookReadHistoriesPage> {
             preferredSize: Size.fromHeight(0),
             child: _isLoading ? LinearProgressIndicator() : Container()),
       ),
-      body: ListView.builder(
-        itemCount: _list.length,
-        itemBuilder: _listTile,
-      ),
+      body: _list.isEmpty
+          ? Center(
+              child: Text("No read history yet",
+                  style: TextTheme.of(context).bodyLarge),
+            )
+          : ListView.builder(
+              itemCount: _list.length,
+              itemBuilder: _listTile,
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           await BookAddEditHistorySheet.showAdd(context, widget.bookId);
