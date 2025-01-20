@@ -22,8 +22,36 @@ class _BookMapper {
       );
 }
 
+class _BookReadHistoryMapper {
+  static final idColumn = "id";
+  static final bookIdColumn = "book_id";
+  static final dateColumn = "date";
+  static final pageFromColumn = "page_from";
+  static final pageToColumn = "page_to";
+
+  static Map<String, Object?> toMap(BookReadHistoryEntity entity) =>
+      <String, Object?>{
+        idColumn: entity.id,
+        bookIdColumn: entity.bookId,
+        dateColumn: entity.date.millisecondsSinceEpoch ~/ 1000,
+        pageFromColumn: entity.pageFrom,
+        pageToColumn: entity.pageTo
+      };
+
+  static BookReadHistoryEntity fromMap(Map<String, Object?> map) =>
+      BookReadHistoryEntity(
+        id: map[idColumn] as int?,
+        bookId: map[bookIdColumn] as int,
+        date: DateTime.fromMillisecondsSinceEpoch(
+            (map[dateColumn] as int) * 1000),
+        pageFrom: map[pageFromColumn] as int,
+        pageTo: map[pageToColumn] as int,
+      );
+}
+
 final bookTable = "books";
 final bookDetailsTable = "book_details";
+final readHistoryTable = "read_histories";
 
 class BookDataSource implements BookRepository {
   Database _db;
@@ -32,12 +60,14 @@ class BookDataSource implements BookRepository {
 
   @override
   Future<void> add(BookEntity book) async {
-    await _db.insert(bookTable, _BookMapper.toMap(book), conflictAlgorithm: ConflictAlgorithm.fail);
+    await _db.insert(bookTable, _BookMapper.toMap(book),
+        conflictAlgorithm: ConflictAlgorithm.fail);
   }
 
   @override
   Future<void> update(BookEntity book) async {
-    await _db.update(bookTable, _BookMapper.toMap(book), where: "id = ?", whereArgs: [book.id]);
+    await _db.update(bookTable, _BookMapper.toMap(book),
+        where: "id = ?", whereArgs: [book.id]);
   }
 
   @override
@@ -48,7 +78,8 @@ class BookDataSource implements BookRepository {
 
   @override
   Future<BookEntity?> getById(int id) async {
-    var rows = await _db.query(bookDetailsTable, where: "id = ?", whereArgs: [id]);
+    var rows =
+        await _db.query(bookDetailsTable, where: "id = ?", whereArgs: [id]);
     if (rows.isEmpty) return null;
     return _BookMapper.fromMap(rows.first);
   }
@@ -59,9 +90,53 @@ class BookDataSource implements BookRepository {
   }
 }
 
+class BookReadHistoryDataSource implements BookReadHistoryRepository {
+  Database database;
+
+  BookReadHistoryDataSource(this.database);
+
+  @override
+  Future<void> add(BookReadHistoryEntity history) async {
+    await database.insert(
+        readHistoryTable, _BookReadHistoryMapper.toMap(history),
+        conflictAlgorithm: ConflictAlgorithm.fail);
+  }
+
+  @override
+  Future<void> update(BookReadHistoryEntity history) async {
+    await database.update(
+      readHistoryTable,
+      _BookReadHistoryMapper.toMap(history),
+      where: "id = ?",
+      whereArgs: [history.id],
+    );
+  }
+
+  @override
+  Future<void> delete(int id) async {
+    await database.delete(readHistoryTable, where: "id = ?", whereArgs: [id]);
+  }
+
+  @override
+  Future<List<BookReadHistoryEntity>> getAllByBook(int bookId) async {
+    final list = await database.query(readHistoryTable,
+        where: "book_id = ?", whereArgs: [bookId], orderBy: "date DESC");
+    return list.map(_BookReadHistoryMapper.fromMap).toList();
+  }
+
+  @override
+  Future<BookReadHistoryEntity?> getLastByBook(int bookId) async {
+    final row = await database.query(readHistoryTable,
+        where: "book_id = ?", whereArgs: [bookId], limit: 1, orderBy: "date DESC");
+    if (row.isEmpty) return null;
+    return _BookReadHistoryMapper.fromMap(row.first);
+  }
+}
+
 class RepositoryProviderImpl implements RepositoryProvider {
   late Database db;
   late BookDataSource bookDataSource;
+  late BookReadHistoryDataSource bookReadHistoryDataSource;
 
   Future<void> open() async {
     final dbPath = join(await getDatabasesPath(), "db");
@@ -76,8 +151,8 @@ CREATE TABLE IF NOT EXISTS books(
       await db.execute("""
 CREATE TABLE IF NOT EXISTS read_histories(
   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-  date INTEGER NOT NULL,
   book_id INTEGER NOT NULL,
+  date INTEGER NOT NULL,
   page_from INTEGER NOT NULL,
   page_to INTEGER NOT NULL,
   FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE ON UPDATE CASCADE    
@@ -134,8 +209,12 @@ LEFT JOIN book_readed_counts
 """);
     });
     bookDataSource = BookDataSource(db);
+    bookReadHistoryDataSource = BookReadHistoryDataSource(db);
   }
 
   @override
   BookRepository get books => bookDataSource;
+
+  @override
+  BookReadHistoryRepository get readHistories => bookReadHistoryDataSource;
 }
