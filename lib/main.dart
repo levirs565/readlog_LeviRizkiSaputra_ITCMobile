@@ -30,14 +30,20 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
         ),
-        home: const HomePage(),
+        home: Builder(builder: (context) => HomePage.create(context)),
       ),
     );
   }
 }
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final BookRepository repository;
+
+  const HomePage({super.key, required this.repository});
+
+  static HomePage create(BuildContext context) {
+    return HomePage(repository: RepositoryProviderContext.of(context).books);
+  }
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -46,13 +52,11 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   bool _isLoading = true;
   List<BookEntity> _list = [];
-  late BookRepository _repository;
 
   @override
-  void didChangeDependencies() {
-    _repository = RepositoryProviderContext.of(context).books;
+  void initState() {
     _refresh();
-    super.didChangeDependencies();
+    super.initState();
   }
 
   _refresh() async {
@@ -60,7 +64,7 @@ class _HomePageState extends State<HomePage> {
       _isLoading = true;
     });
 
-    final newList = await _repository.getAll();
+    final newList = await widget.repository.getAll();
 
     setState(() {
       _list = newList;
@@ -224,9 +228,7 @@ class _BookAddEditSheet extends State<BookAddEditSheet> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  widget.book == null
-                      ? "Add Book"
-                      : "Edit Book",
+                  widget.book == null ? "Add Book" : "Edit Book",
                   style: TextTheme.of(context).titleLarge,
                   textAlign: TextAlign.center,
                 ),
@@ -308,9 +310,9 @@ class _BookOverviewPage extends State<BookOverviewPage> {
   List<BookReadingProgressItem> _readingProgress = [];
 
   @override
-  void didChangeDependencies() {
+  void initState() {
     _refresh();
-    super.didChangeDependencies();
+    super.initState();
   }
 
   _refresh() async {
@@ -699,22 +701,25 @@ class _BookAddEditHistorySheet extends State<BookAddEditHistorySheet> {
                           ))
                   : Container(),
               FilledButton(
-                  onPressed: _isSaving ? null : () {
-                    setState(() {
-                      _extraError = null;
-                    });
-                    if (_formKey.currentState!.validate()) {
-                      if (int.parse(_pageFromEditingController.text) >
-                          int.parse(_pageToEditingController.text)) {
-                        setState(() {
-                          _extraError = "From page must less than to page";
-                        });
-                        return;
-                      }
+                  onPressed: _isSaving
+                      ? null
+                      : () {
+                          setState(() {
+                            _extraError = null;
+                          });
+                          if (_formKey.currentState!.validate()) {
+                            if (int.parse(_pageFromEditingController.text) >
+                                int.parse(_pageToEditingController.text)) {
+                              setState(() {
+                                _extraError =
+                                    "From page must less than to page";
+                              });
+                              return;
+                            }
 
-                      _save();
-                    }
-                  },
+                            _save();
+                          }
+                        },
                   child: Text(widget.readHistory == null ? "Add" : "Save"))
             ],
           ),
