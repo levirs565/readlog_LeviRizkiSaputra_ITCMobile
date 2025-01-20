@@ -52,6 +52,7 @@ class _BookReadHistoryMapper {
 final bookTable = "books";
 final bookDetailsTable = "book_details";
 final readHistoryTable = "read_histories";
+final readRangesTable = "book_read_ranges";
 
 class BookDataSource implements BookRepository {
   Database _db;
@@ -127,9 +128,22 @@ class BookReadHistoryDataSource implements BookReadHistoryRepository {
   @override
   Future<BookReadHistoryEntity?> getLastByBook(int bookId) async {
     final row = await database.query(readHistoryTable,
-        where: "book_id = ?", whereArgs: [bookId], limit: 1, orderBy: "date DESC");
+        where: "book_id = ?",
+        whereArgs: [bookId],
+        limit: 1,
+        orderBy: "date DESC");
     if (row.isEmpty) return null;
     return _BookReadHistoryMapper.fromMap(row.first);
+  }
+
+  @override
+  Future<List<BookReadRangeEntity>> getAllMergedByBook(int bookId) async {
+    final rows = await database
+        .query(readRangesTable, where: "book_id = ?", whereArgs: [bookId]);
+    return rows
+        .map((map) => BookReadRangeEntity(
+            pageFrom: map["page_from"] as int, pageTo: map["page_to"] as int))
+        .toList();
   }
 }
 
@@ -160,6 +174,37 @@ CREATE TABLE IF NOT EXISTS read_histories(
       await db.execute("""
 CREATE INDEX read_histories_ranges
 ON read_histories(book_id, page_from, page_to)
+""");
+      await db.execute("""
+CREATE VIEW IF NOT EXISTS book_read_ranges AS
+WITH RECURSIVE merged AS (
+  SELECT 
+  	id,
+  	book_id,
+  	page_from,
+  	page_to
+  FROM read_histories
+  WHERE id = (
+  	SELECT id
+    FROM read_histories h WHERE h.book_id = read_histories.book_id
+ 		ORDER BY h.page_from, h.page_to
+    LIMIT 1
+  )
+  UNION ALL
+  SELECT 
+  	read_histories.id,
+  	read_histories.book_id,
+  	MAX(merged.page_to + 1, read_histories.page_from) AS page_from,
+  	read_histories.page_to as page_to
+  FROM read_histories, merged
+  WHERE read_histories.id = (
+    SELECT id
+    FROM read_histories h WHERE h.book_id = merged.book_id AND h.page_to > merged.page_to
+    ORDER BY h.page_from, h.page_to
+    LIMIT 1
+  )
+)
+SELECT * FROM merged
 """);
       await db.execute("""
 CREATE VIEW IF NOT EXISTS book_readed_counts AS

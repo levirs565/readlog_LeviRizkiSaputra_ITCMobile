@@ -5,6 +5,7 @@ import 'package:readlog/data.dart';
 import 'package:readlog/data_context.dart';
 import 'package:readlog/data_impl.dart';
 import 'package:intl/intl.dart';
+import 'package:readlog/utils.dart';
 
 late RepositoryProviderImpl repositoryProvider;
 
@@ -291,6 +292,7 @@ class _BookOverviewPage extends State<BookOverviewPage> {
   bool _isLoading = true;
   BookEntity? _book = null;
   BookReadHistoryEntity? _lastRead = null;
+  List<BookReadingProgressItem> _readingProgress = [];
 
   @override
   void didChangeDependencies() {
@@ -306,10 +308,13 @@ class _BookOverviewPage extends State<BookOverviewPage> {
     final book = await widget.bookRepository.getById(widget.id);
     final lastRead =
         await widget.bookReadHistoryRepository.getLastByBook(widget.id);
+    final coverage = analyzeBookReadingProgress(book!.pageCount,
+        await widget.bookReadHistoryRepository.getAllMergedByBook(widget.id));
 
     setState(() {
       _isLoading = false;
       _lastRead = lastRead;
+      _readingProgress = coverage;
       _book = book;
     });
   }
@@ -344,7 +349,8 @@ class _BookOverviewPage extends State<BookOverviewPage> {
       ),
       body: _book == null
           ? null
-          : Column(
+          : SingleChildScrollView(
+              child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               spacing: 16,
               children: [
@@ -377,43 +383,96 @@ class _BookOverviewPage extends State<BookOverviewPage> {
                   ),
                 ),
                 Container(
-                    padding: EdgeInsets.all(16),
-                    color: Theme.of(context).colorScheme.surfaceContainer,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      spacing: 8,
-                      children: [
-                        Text("Read History",
+                  padding: EdgeInsets.all(16),
+                  color: Theme.of(context).colorScheme.surfaceContainer,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: 8,
+                    children: [
+                      Text("Read History",
+                          style: TextTheme.of(context).titleMedium),
+                      Text(_lastRead == null
+                          ? "No read history yet"
+                          : "Last read from page ${_lastRead!.pageFrom} to page ${_lastRead!.pageTo} at ${_dateFormatter.format(_lastRead!.date)}"),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        spacing: 8,
+                        children: [
+                          FilledButton(
+                              onPressed: () async {
+                                await BookAddEditHistorySheet.showAdd(
+                                    context, widget.id);
+                                if (!mounted) return;
+                                _refresh();
+                              },
+                              child: const Text("Add")),
+                          FilledButton(
+                              onPressed: () async {
+                                await BookReadHistoriesPage.show(
+                                    context, widget.id);
+                                if (!mounted) return;
+                                _refresh();
+                              },
+                              child: const Text("Show All"))
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(vertical: 16, horizontal: 0),
+                  color: Theme.of(context).colorScheme.surfaceContainer,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    spacing: 8,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: Text("Reading Progress",
+                            textAlign: TextAlign.left,
                             style: TextTheme.of(context).titleMedium),
-                        Text(_lastRead == null
-                            ? "No read history yet"
-                            : "Last read from page ${_lastRead!.pageFrom} to page ${_lastRead!.pageTo} at ${_dateFormatter.format(_lastRead!.date)}"),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          spacing: 8,
-                          children: [
-                            FilledButton(
-                                onPressed: () async {
-                                  await BookAddEditHistorySheet.showAdd(
-                                      context, widget.id);
-                                  if (!mounted) return;
-                                  _refresh();
-                                },
-                                child: const Text("Add")),
-                            FilledButton(
-                                onPressed: () async {
-                                  await BookReadHistoriesPage.show(
-                                      context, widget.id);
-                                  if (!mounted) return;
-                                  _refresh();
-                                },
-                                child: const Text("Show All"))
-                          ],
-                        ),
-                      ],
-                    ))
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                            "Add Read History to update Reading Progress",
+                            textAlign: TextAlign.left,
+                            style: TextTheme.of(context).bodySmall),
+                      ),
+                      ListView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: _readingProgress.length,
+                          padding: EdgeInsets.all(0),
+                          itemBuilder: (context, index) => Container(
+                              color: _readingProgress[index].hasRead
+                                  ? Theme.of(context)
+                                      .colorScheme
+                                      .primaryContainer
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .errorContainer,
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 8 +
+                                      ((_readingProgress[index].pageTo -
+                                              _readingProgress[index].pageFrom +
+                                              1) /
+                                          8),
+                                  horizontal: 16),
+                              child: Column(children: [
+                                Text(
+                                  "From page ${_readingProgress[index].pageFrom} to ${_readingProgress[index].pageTo}",
+                                  style: TextTheme.of(context).bodyMedium,
+                                ),
+                                Text(_readingProgress[index].hasRead
+                                    ? "Has been read"
+                                    : "Unread")
+                              ])))
+                    ],
+                  ),
+                )
               ],
-            ),
+            )),
     );
   }
 }
@@ -591,7 +650,9 @@ class _BookAddEditHistorySheet extends State<BookAddEditHistorySheet> {
             spacing: 16,
             children: [
               Text(
-                widget.readHistory == null ? "Add Read History" : "Edit Read History",
+                widget.readHistory == null
+                    ? "Add Read History"
+                    : "Edit Read History",
                 style: TextTheme.of(context).titleLarge,
                 textAlign: TextAlign.center,
               ),

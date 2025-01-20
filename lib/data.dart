@@ -25,6 +25,12 @@ class BookReadHistoryEntity {
       required this.pageTo});
 }
 
+class BookReadRangeEntity {
+  final int pageFrom, pageTo;
+
+  const BookReadRangeEntity({required this.pageFrom, required this.pageTo});
+}
+
 abstract interface class BookRepository {
   Future<void> add(BookEntity book);
 
@@ -43,6 +49,8 @@ abstract interface class BookReadHistoryRepository {
   Future<void> update(BookReadHistoryEntity history);
 
   Future<List<BookReadHistoryEntity>> getAllByBook(int bookId);
+
+  Future<List<BookReadRangeEntity>> getAllMergedByBook(int bookId);
 
   Future<BookReadHistoryEntity?> getLastByBook(int bookId);
 
