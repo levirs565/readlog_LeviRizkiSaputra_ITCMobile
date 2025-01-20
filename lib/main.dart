@@ -84,10 +84,7 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          await Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => AddEditPage(
-                    repository: RepositoryProviderContext.of(context).books,
-                  )));
+          await BookAddEditSheet.showAdd(context);
           if (!mounted) return;
           _refresh();
         },
@@ -133,33 +130,45 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class AddEditPage extends StatefulWidget {
-  final int? id;
+class BookAddEditSheet extends StatefulWidget {
+  final BookEntity? book;
   final BookRepository repository;
 
-  const AddEditPage({super.key, this.id, required this.repository});
+  const BookAddEditSheet({super.key, this.book, required this.repository});
+
+  static Future<void> showAdd(BuildContext context) {
+    return showModalBottomSheet<void>(
+        context: context,
+        builder: (context) => BookAddEditSheet(
+              repository: RepositoryProviderContext.of(context).books,
+            ));
+  }
+
+  static Future<void> showEdit(BuildContext context, BookEntity book) {
+    return showModalBottomSheet<void>(
+        context: context,
+        builder: (context) => BookAddEditSheet(
+              book: book,
+              repository: RepositoryProviderContext.of(context).books,
+            ));
+  }
 
   @override
-  State<AddEditPage> createState() => _AddEditPage();
+  State<BookAddEditSheet> createState() => _BookAddEditSheet();
 }
 
-class _AddEditPage extends State<AddEditPage> {
+class _BookAddEditSheet extends State<BookAddEditSheet> {
   final _formKey = GlobalKey<FormState>();
   final _titleEditingController = TextEditingController();
   final _pageCountEditingController = TextEditingController();
   bool _isSaving = false;
 
-  _loadData() async {
-    if (widget.id == null) return;
-    final book = await widget.repository.getById(widget.id!);
-    if (book == null) return;
-    _titleEditingController.text = book.title;
-    _pageCountEditingController.text = book.pageCount.toString();
-  }
-
   @override
   void initState() {
-    _loadData();
+    if (widget.book != null) {
+      _titleEditingController.text = widget.book!.title;
+      _pageCountEditingController.text = widget.book!.pageCount.toString();
+    }
     super.initState();
   }
 
@@ -176,13 +185,13 @@ class _AddEditPage extends State<AddEditPage> {
     });
 
     final entity = BookEntity(
-        id: widget.id,
+        id: widget.book?.id,
         title: _titleEditingController.text,
         pageCount: int.parse(_pageCountEditingController.text),
         readedPageCount: 0);
 
     try {
-      if (widget.id == null) {
+      if (widget.book?.id == null) {
         await widget.repository.add(entity);
       } else {
         await widget.repository.update(entity);
@@ -204,60 +213,64 @@ class _AddEditPage extends State<AddEditPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.id == null ? "Add Book" : "Edit Book"),
-      ),
-      body: Form(
-        key: _formKey,
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Column(
-            spacing: 16.0,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              TextFormField(
-                controller: _titleEditingController,
-                decoration: InputDecoration(
-                  border: const OutlineInputBorder(),
-                  label: const Text("Title"),
+    return Wrap(
+      children: [
+        Form(
+          key: _formKey,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(16, 32, 16, 48),
+            child: Column(
+              spacing: 16.0,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  widget.book == null
+                      ? "Add Book"
+                      : "Edit Book",
+                  style: TextTheme.of(context).titleLarge,
+                  textAlign: TextAlign.center,
                 ),
-                validator: (value) => value == null || value.trim().isNotEmpty
-                    ? null
-                    : "Cannot blank",
-                enabled: !_isSaving,
-              ),
-              TextFormField(
-                controller: _pageCountEditingController,
-                decoration: InputDecoration(
-                  border: const OutlineInputBorder(),
-                  label: const Text("Page Count"),
+                TextFormField(
+                  controller: _titleEditingController,
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    label: const Text("Title"),
+                  ),
+                  validator: (value) => value == null || value.trim().isNotEmpty
+                      ? null
+                      : "Cannot blank",
+                  enabled: !_isSaving,
                 ),
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                validator: (value) => value == null || value.trim().isNotEmpty
-                    ? null
-                    : "Cannot blank",
-                enabled: !_isSaving,
-              ),
-              Spacer(),
-              FilledButton(
-                onPressed: _isSaving
-                    ? null
-                    : () {
-                        if (_formKey.currentState!.validate()) {
-                          _save();
-                        }
-                      },
-                child: Text(
-                  widget.id == null ? "Add" : "Save",
+                TextFormField(
+                  controller: _pageCountEditingController,
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    label: const Text("Page Count"),
+                  ),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  validator: (value) => value == null || value.trim().isNotEmpty
+                      ? null
+                      : "Cannot blank",
+                  enabled: !_isSaving,
                 ),
-              )
-            ],
+                FilledButton(
+                  onPressed: _isSaving
+                      ? null
+                      : () {
+                          if (_formKey.currentState!.validate()) {
+                            _save();
+                          }
+                        },
+                  child: Text(
+                    widget.book == null ? "Add" : "Save",
+                  ),
+                )
+              ],
+            ),
           ),
-        ),
-      ),
+        )
+      ],
     );
   }
 }
@@ -333,11 +346,8 @@ class _BookOverviewPage extends State<BookOverviewPage> {
         actions: [
           IconButton(
             onPressed: () async {
-              await Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => AddEditPage(
-                        id: widget.id,
-                        repository: RepositoryProviderContext.of(context).books,
-                      )));
+              if (_isLoading || _book == null) return;
+              await BookAddEditSheet.showEdit(context, _book!);
               if (mounted) {
                 _refresh();
               }
