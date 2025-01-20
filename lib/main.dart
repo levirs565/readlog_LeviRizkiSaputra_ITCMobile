@@ -615,7 +615,7 @@ class BookAddEditHistorySheet extends StatefulWidget {
 
 class _BookAddEditHistorySheet extends State<BookAddEditHistorySheet> {
   final _formKey = GlobalKey<FormState>();
-  bool _isLoading = false;
+  bool _isSaving = false;
   String? _extraError = null;
   final TextEditingController _pageFromEditingController =
       TextEditingController();
@@ -624,7 +624,7 @@ class _BookAddEditHistorySheet extends State<BookAddEditHistorySheet> {
 
   Future<void> _save() async {
     setState(() {
-      _isLoading = true;
+      _isSaving = true;
     });
 
     final pageFrom = int.parse(_pageFromEditingController.text);
@@ -677,6 +677,7 @@ class _BookAddEditHistorySheet extends State<BookAddEditHistorySheet> {
                 validator: (value) => value == null || value.trim().isNotEmpty
                     ? null
                     : "Cannot blank",
+                enabled: !_isSaving,
               ),
               TextFormField(
                 controller: _pageToEditingController,
@@ -689,6 +690,7 @@ class _BookAddEditHistorySheet extends State<BookAddEditHistorySheet> {
                 validator: (value) => value == null || value.trim().isNotEmpty
                     ? null
                     : "Cannot blank",
+                enabled: !_isSaving,
               ),
               _extraError != null
                   ? Text(_extraError!,
@@ -697,7 +699,7 @@ class _BookAddEditHistorySheet extends State<BookAddEditHistorySheet> {
                           ))
                   : Container(),
               FilledButton(
-                  onPressed: () {
+                  onPressed: _isSaving ? null : () {
                     setState(() {
                       _extraError = null;
                     });
