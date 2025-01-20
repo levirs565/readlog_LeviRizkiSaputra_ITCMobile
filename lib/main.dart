@@ -238,9 +238,7 @@ class _BookAddEditSheet extends State<BookAddEditSheet> {
                     border: const OutlineInputBorder(),
                     label: const Text("Title"),
                   ),
-                  validator: (value) => value == null || value.trim().isNotEmpty
-                      ? null
-                      : "Cannot blank",
+                  validator: stringNotEmptyValidator,
                   enabled: !_isSaving,
                 ),
                 TextFormField(
@@ -251,9 +249,7 @@ class _BookAddEditSheet extends State<BookAddEditSheet> {
                   ),
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  validator: (value) => value == null || value.trim().isNotEmpty
-                      ? null
-                      : "Cannot blank",
+                  validator: stringIsPositiveNumberValidator,
                   enabled: !_isSaving,
                 ),
                 FilledButton(
@@ -682,9 +678,7 @@ class _BookAddEditHistorySheet extends State<BookAddEditHistorySheet> {
                 ),
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                validator: (value) => value == null || value.trim().isNotEmpty
-                    ? null
-                    : "Cannot blank",
+                validator: stringIsPositiveNumberValidator,
                 enabled: !_isSaving,
               ),
               TextFormField(
@@ -695,9 +689,7 @@ class _BookAddEditHistorySheet extends State<BookAddEditHistorySheet> {
                 ),
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                validator: (value) => value == null || value.trim().isNotEmpty
-                    ? null
-                    : "Cannot blank",
+                validator: stringIsPositiveNumberValidator,
                 enabled: !_isSaving,
               ),
               _extraError != null
