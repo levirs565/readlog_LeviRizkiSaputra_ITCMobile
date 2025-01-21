@@ -60,8 +60,8 @@ class BookDataSource implements BookRepository {
   BookDataSource(this._db);
 
   @override
-  Future<void> add(BookEntity book) async {
-    await _db.insert(bookTable, _BookMapper.toMap(book),
+  Future<int> add(BookEntity book) async {
+    return await _db.insert(bookTable, _BookMapper.toMap(book),
         conflictAlgorithm: ConflictAlgorithm.fail);
   }
 
@@ -97,8 +97,8 @@ class BookReadHistoryDataSource implements BookReadHistoryRepository {
   BookReadHistoryDataSource(this.database);
 
   @override
-  Future<void> add(BookReadHistoryEntity history) async {
-    await database.insert(
+  Future<int> add(BookReadHistoryEntity history) async {
+    return await database.insert(
         readHistoryTable, _BookReadHistoryMapper.toMap(history),
         conflictAlgorithm: ConflictAlgorithm.fail);
   }

@@ -32,7 +32,7 @@ class BookReadRangeEntity {
 }
 
 abstract interface class BookRepository {
-  Future<void> add(BookEntity book);
+  Future<int> add(BookEntity book);
 
   Future<void> update(BookEntity book);
 
@@ -44,7 +44,7 @@ abstract interface class BookRepository {
 }
 
 abstract interface class BookReadHistoryRepository {
-  Future<void> add(BookReadHistoryEntity history);
+  Future<int> add(BookReadHistoryEntity history);
 
   Future<void> update(BookReadHistoryEntity history);
 

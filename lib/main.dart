@@ -92,8 +92,10 @@ class _HomePageState extends State<HomePage> {
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          await BookAddEditSheet.showAdd(context);
-          if (!mounted) return;
+          int? id = await BookAddEditSheet.showAdd(context);
+          if (!context.mounted || id == null) return;
+          await BookOverviewPage.show(context, id);
+          if (!context.mounted) return;
           _refresh();
         },
         child: const Icon(Icons.add),
@@ -144,16 +146,16 @@ class BookAddEditSheet extends StatefulWidget {
 
   const BookAddEditSheet({super.key, this.book, required this.repository});
 
-  static Future<void> showAdd(BuildContext context) {
-    return showModalBottomSheet<void>(
+  static Future<int?> showAdd(BuildContext context) {
+    return showModalBottomSheet<int>(
         context: context,
         builder: (context) => BookAddEditSheet(
               repository: RepositoryProviderContext.of(context).books,
             ));
   }
 
-  static Future<void> showEdit(BuildContext context, BookEntity book) {
-    return showModalBottomSheet<void>(
+  static Future<int?> showEdit(BuildContext context, BookEntity book) {
+    return showModalBottomSheet<int?>(
         context: context,
         builder: (context) => BookAddEditSheet(
               book: book,
@@ -199,13 +201,14 @@ class _BookAddEditSheet extends State<BookAddEditSheet> {
         readedPageCount: 0);
 
     try {
+      int? result = entity.id;
       if (widget.book?.id == null) {
-        await widget.repository.add(entity);
+        result = await widget.repository.add(entity);
       } else {
         await widget.repository.update(entity);
       }
       if (mounted) {
-        Navigator.of(context).pop();
+        Navigator.of(context).pop(result);
       }
     } catch (e) {
       setState(() {
