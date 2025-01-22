@@ -356,6 +356,46 @@ class _BookOverviewPage extends State<BookOverviewPage> {
             },
             icon: const Icon(Icons.edit),
             tooltip: "Edit",
+          ),
+          IconButton(
+            onPressed: () async {
+              if (_isLoading || _book == null) return;
+              final result = await showDialog<bool>(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text("Delete Confirmation"),
+                    content: const Text("Are you sure delete this book?"),
+                    actions: [
+                      TextButton(
+                          style: TextButton.styleFrom(
+                            textStyle: TextTheme.of(context).labelLarge,
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop(false);
+                          },
+                          child: Text("Cancel")),
+                      TextButton(
+                          style: TextButton.styleFrom(
+                            textStyle: TextTheme.of(context).labelLarge,
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop(true);
+                          },
+                          child: Text("OK"))
+                    ],
+                  );
+                },
+              );
+              if (result != null && result) {
+                await widget.bookRepository.delete(widget.id);
+                if (context.mounted) {
+                  Navigator.of(context).pop();
+                }
+              }
+            },
+            icon: const Icon(Icons.delete),
+            tooltip: "Delete",
           )
         ],
       ),
