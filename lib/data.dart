@@ -14,13 +14,14 @@ class BookEntity {
 class BookReadHistoryEntity {
   final int? id;
   final int bookId;
-  final DateTime date;
+  final DateTime dateTimeFrom, dateTimeTo;
   final int pageFrom, pageTo;
 
   const BookReadHistoryEntity(
       {this.id,
       required this.bookId,
-      required this.date,
+      required this.dateTimeFrom,
+      required this.dateTimeTo,
       required this.pageFrom,
       required this.pageTo});
 }

@@ -45,6 +45,13 @@ List<BookReadingProgressItem> analyzeBookReadingProgress(
   return result;
 }
 
+String? dateTimeIsNotEmptyValidator(DateTime? dateTime) {
+  if (dateTime == null) {
+    return "Cannot empty";
+  }
+  return null;
+}
+
 String? stringIsPositiveNumberValidator(String? text) {
   if (text == null || text.isEmpty) {
     return "Cannot empty. Must be number";

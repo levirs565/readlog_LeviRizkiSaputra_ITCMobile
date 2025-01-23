@@ -25,7 +25,8 @@ class _BookMapper {
 class _BookReadHistoryMapper {
   static final idColumn = "id";
   static final bookIdColumn = "book_id";
-  static final dateColumn = "date";
+  static final dateTimeFromColumn = "date_time_from";
+  static final dateTimeToColumn = "date_time_to";
   static final pageFromColumn = "page_from";
   static final pageToColumn = "page_to";
 
@@ -33,7 +34,8 @@ class _BookReadHistoryMapper {
       <String, Object?>{
         idColumn: entity.id,
         bookIdColumn: entity.bookId,
-        dateColumn: entity.date.millisecondsSinceEpoch ~/ 1000,
+        dateTimeFromColumn: entity.dateTimeFrom.millisecondsSinceEpoch ~/ 1000,
+        dateTimeToColumn: entity.dateTimeTo.millisecondsSinceEpoch ~/ 1000,
         pageFromColumn: entity.pageFrom,
         pageToColumn: entity.pageTo
       };
@@ -42,8 +44,10 @@ class _BookReadHistoryMapper {
       BookReadHistoryEntity(
         id: map[idColumn] as int?,
         bookId: map[bookIdColumn] as int,
-        date: DateTime.fromMillisecondsSinceEpoch(
-            (map[dateColumn] as int) * 1000),
+        dateTimeFrom: DateTime.fromMillisecondsSinceEpoch(
+            (map[dateTimeFromColumn] as int) * 1000),
+        dateTimeTo: DateTime.fromMillisecondsSinceEpoch(
+            (map[dateTimeToColumn] as int) * 1000),
         pageFrom: map[pageFromColumn] as int,
         pageTo: map[pageToColumn] as int,
       );
@@ -121,7 +125,7 @@ class BookReadHistoryDataSource implements BookReadHistoryRepository {
   @override
   Future<List<BookReadHistoryEntity>> getAllByBook(int bookId) async {
     final list = await database.query(readHistoryTable,
-        where: "book_id = ?", whereArgs: [bookId], orderBy: "date DESC");
+        where: "book_id = ?", whereArgs: [bookId], orderBy: "date_time_from DESC");
     return list.map(_BookReadHistoryMapper.fromMap).toList();
   }
 
@@ -131,7 +135,7 @@ class BookReadHistoryDataSource implements BookReadHistoryRepository {
         where: "book_id = ?",
         whereArgs: [bookId],
         limit: 1,
-        orderBy: "date DESC");
+        orderBy: "date_time_to DESC");
     if (row.isEmpty) return null;
     return _BookReadHistoryMapper.fromMap(row.first);
   }
@@ -166,7 +170,8 @@ CREATE TABLE IF NOT EXISTS books(
 CREATE TABLE IF NOT EXISTS read_histories(
   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   book_id INTEGER NOT NULL,
-  date INTEGER NOT NULL,
+  date_time_from INTEGER NOT NULL,
+  date_time_to INTEGER NOT NULL,
   page_from INTEGER NOT NULL,
   page_to INTEGER NOT NULL,
   FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE ON UPDATE CASCADE    

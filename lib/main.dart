@@ -459,7 +459,7 @@ class _BookOverviewPage extends State<BookOverviewPage> {
           Text("Read History", style: TextTheme.of(context).titleMedium),
           Text(_lastRead == null
               ? "No read history yet"
-              : "Last read from page ${_lastRead!.pageFrom} to page ${_lastRead!.pageTo} at ${_dateFormatter.format(_lastRead!.date)}"),
+              : "Last read from page ${_lastRead!.pageFrom} to page ${_lastRead!.pageTo} at ${_dateFormatter.format(_lastRead!.dateTimeFrom)} - ${_dateFormatter.format(_lastRead!.dateTimeTo)}"),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             spacing: 8,
@@ -635,7 +635,7 @@ class _BookReadHistoriesPage extends State<BookReadHistoriesPage> {
                 style: TextTheme.of(context).bodyLarge,
               ),
               Text(
-                _dateFormatter.format(_list[index].date),
+                "${_dateFormatter.format(_list[index].dateTimeFrom)}-${_dateFormatter.format(_list[index].dateTimeTo)}",
                 style: TextTheme.of(context).bodyMedium,
               )
             ],
@@ -684,6 +684,8 @@ class _BookAddEditHistorySheet extends State<BookAddEditHistorySheet> {
   final _formKey = GlobalKey<FormState>();
   bool _isSaving = false;
   String? _extraError = null;
+  final ValueNotifier<DateTime?> _dateFromNotifier = ValueNotifier(null);
+  final ValueNotifier<DateTime?> _dateToNotifier = ValueNotifier(null);
   final TextEditingController _pageFromEditingController =
       TextEditingController();
   final TextEditingController _pageToEditingController =
@@ -699,13 +701,15 @@ class _BookAddEditHistorySheet extends State<BookAddEditHistorySheet> {
     if (widget.readHistory == null) {
       await widget.repository.add(BookReadHistoryEntity(
           bookId: widget.bookId!,
-          date: DateTime.now(),
+          dateTimeFrom: _dateFromNotifier.value!,
+          dateTimeTo: _dateToNotifier.value!,
           pageFrom: pageFrom,
           pageTo: pageTo));
     } else {
       await widget.repository.update(BookReadHistoryEntity(
           bookId: widget.readHistory!.bookId,
-          date: widget.readHistory!.date,
+          dateTimeFrom: _dateFromNotifier.value!,
+          dateTimeTo: _dateToNotifier.value!,
           pageFrom: pageFrom,
           pageTo: pageTo));
     }
@@ -732,6 +736,33 @@ class _BookAddEditHistorySheet extends State<BookAddEditHistorySheet> {
                     : "Edit Read History",
                 style: TextTheme.of(context).titleLarge,
                 textAlign: TextAlign.center,
+              ),
+              DateTimeFormField(
+                controller: _dateFromNotifier,
+                decoration: InputDecoration(
+                  label: const Text("From Date Time"),
+                  border: const OutlineInputBorder(),
+                ),
+                enabled: !_isSaving,
+                validator: dateTimeIsNotEmptyValidator,
+              ),
+              DateTimeFormField(
+                controller: _dateToNotifier,
+                decoration: InputDecoration(
+                  label: const Text("To Date Time"),
+                  border: const OutlineInputBorder(),
+                ),
+                enabled: !_isSaving,
+                validator: (DateTime? dateTime) {
+                  final emptyValidator = dateTimeIsNotEmptyValidator(dateTime);
+                  if (emptyValidator != null) return emptyValidator;
+                  if (_dateFromNotifier.value == null) return null;
+                  if (_dateFromNotifier.value!.millisecondsSinceEpoch >
+                      dateTime!.millisecondsSinceEpoch) {
+                    return "To Date Time must greater than From Date Time";
+                  }
+                  return null;
+                },
               ),
               TextFormField(
                 controller: _pageFromEditingController,
@@ -904,7 +935,8 @@ class _BookReadingTimerPage extends State<BookReadingTimerPage> {
     await widget.repository.add(
       BookReadHistoryEntity(
         bookId: widget.bookId,
-        date: _timerStartTime,
+        dateTimeFrom: _timerStartTime,
+        dateTimeTo: DateTime.now(),
         pageFrom: pageFrom,
         pageTo: pageTo,
       ),
@@ -1000,5 +1032,104 @@ class _BookReadingTimerPage extends State<BookReadingTimerPage> {
         ),
       ),
     );
+  }
+}
+
+class DateTimeFormField extends FormField<DateTime> {
+  final ValueNotifier<DateTime?> controller;
+  final InputDecoration decoration;
+
+  DateTimeFormField({
+    super.key,
+    required this.controller,
+    required this.decoration,
+    super.validator,
+    super.enabled,
+  }) : super(
+          builder: (FormFieldState<DateTime> field) {
+            final state = field as _DateTimeFormField;
+            return TextField(
+              decoration: decoration.copyWith(
+                errorText: state.errorText,
+              ),
+              controller: field._textController,
+              readOnly: true,
+              onTap: state._showPicker,
+              enabled: enabled,
+            );
+          },
+        );
+
+  @override
+  FormFieldState<DateTime> createState() => _DateTimeFormField();
+}
+
+class _DateTimeFormField extends FormFieldState<DateTime> {
+  static final _dateFormatter = DateFormat("dd-MM-yyyy HH:mm");
+
+  @override
+  DateTimeFormField get widget => super.widget as DateTimeFormField;
+  final TextEditingController _textController = TextEditingController();
+
+  @override
+  void initState() {
+    widget.controller.addListener(_handleControllerChange);
+    super.initState();
+  }
+
+  _showPicker() async {
+    final initial = value ?? DateTime.now();
+    final date = await showDatePicker(
+      context: context,
+      firstDate: DateTime.fromMillisecondsSinceEpoch(0),
+      lastDate: DateTime.now(),
+      initialDate: initial,
+    );
+    if (date == null || !mounted) return;
+    final time = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(initial),
+        builder: (BuildContext context, Widget? child) {
+          return MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              alwaysUse24HourFormat: true,
+            ),
+            child: child ?? Container(),
+          );
+        });
+    if (time == null) return;
+
+    final dateTime = date.copyWith(hour: time.hour, minute: time.minute);
+    didChange(dateTime);
+    widget.controller.value = dateTime;
+  }
+
+  @override
+  void didUpdateWidget(DateTimeFormField oldWidget) {
+    if (oldWidget.controller != widget.controller) {
+      oldWidget.controller.removeListener(_handleControllerChange);
+      widget.controller.addListener(_handleControllerChange);
+
+      didChange(widget.controller.value);
+    }
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
+  void didChange(DateTime? value) {
+    final formatted = value == null ? "" : _dateFormatter.format(value);
+    if (formatted != _textController.text) _textController.text = formatted;
+    super.didChange(value);
+  }
+
+  _handleControllerChange() {
+    if (widget.controller.value != value) didChange(widget.controller.value);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_handleControllerChange);
+    _textController.dispose();
+    super.dispose();
   }
 }
