@@ -150,6 +150,7 @@ class BookAddEditSheet extends StatefulWidget {
 
   static Future<int?> showAdd(BuildContext context) {
     return showModalBottomSheet<int>(
+        isScrollControlled: true,
         context: context,
         builder: (context) => BookAddEditSheet(
               repository: RepositoryProviderContext.of(context).books,
@@ -159,6 +160,7 @@ class BookAddEditSheet extends StatefulWidget {
   static Future<int?> showEdit(BuildContext context, BookEntity book) {
     return showModalBottomSheet<int?>(
         context: context,
+        isScrollControlled: true,
         builder: (context) => BookAddEditSheet(
               book: book,
               repository: RepositoryProviderContext.of(context).books,
@@ -226,58 +228,61 @@ class _BookAddEditSheet extends State<BookAddEditSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      children: [
-        Form(
-          key: _formKey,
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(16, 32, 16, 48),
-            child: Column(
-              spacing: 16.0,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  widget.book == null ? "Add Book" : "Edit Book",
-                  style: TextTheme.of(context).titleLarge,
-                  textAlign: TextAlign.center,
-                ),
-                TextFormField(
-                  controller: _titleEditingController,
-                  decoration: InputDecoration(
-                    border: const OutlineInputBorder(),
-                    label: const Text("Title"),
-                  ),
-                  validator: stringNotEmptyValidator,
-                  enabled: !_isSaving,
-                ),
-                TextFormField(
-                  controller: _pageCountEditingController,
-                  decoration: InputDecoration(
-                    border: const OutlineInputBorder(),
-                    label: const Text("Page Count"),
-                  ),
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  validator: stringIsPositiveNumberValidator,
-                  enabled: !_isSaving,
-                ),
-                FilledButton(
-                  onPressed: _isSaving
-                      ? null
-                      : () {
-                          if (_formKey.currentState!.validate()) {
-                            _save();
-                          }
-                        },
-                  child: Text(
-                    widget.book == null ? "Add" : "Save",
-                  ),
-                )
-              ],
-            ),
+    return SingleChildScrollView(
+      child: Form(
+        key: _formKey,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            16,
+            32,
+            16,
+            32 + MediaQuery.of(context).viewInsets.bottom,
           ),
-        )
-      ],
+          child: Column(
+            spacing: 16.0,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                widget.book == null ? "Add Book" : "Edit Book",
+                style: TextTheme.of(context).titleLarge,
+                textAlign: TextAlign.center,
+              ),
+              TextFormField(
+                controller: _titleEditingController,
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  label: const Text("Title"),
+                ),
+                validator: stringNotEmptyValidator,
+                enabled: !_isSaving,
+              ),
+              TextFormField(
+                controller: _pageCountEditingController,
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  label: const Text("Page Count"),
+                ),
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                validator: stringIsPositiveNumberValidator,
+                enabled: !_isSaving,
+              ),
+              FilledButton(
+                onPressed: _isSaving
+                    ? null
+                    : () {
+                        if (_formKey.currentState!.validate()) {
+                          _save();
+                        }
+                      },
+                child: Text(
+                  widget.book == null ? "Add" : "Save",
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -752,6 +757,7 @@ class BookAddEditHistorySheet extends StatefulWidget {
   static Future<void> showAdd(BuildContext context, int bookId) {
     return showModalBottomSheet<void>(
         context: context,
+        isScrollControlled: true,
         builder: (context) => BookAddEditHistorySheet(
               bookId: bookId,
               repository: RepositoryProviderContext.of(context).readHistories,
@@ -762,6 +768,7 @@ class BookAddEditHistorySheet extends StatefulWidget {
       BuildContext context, BookReadHistoryEntity readHistory) {
     return showModalBottomSheet(
         context: context,
+        isScrollControlled: true,
         builder: (context) => BookAddEditHistorySheet(
               readHistory: readHistory,
               repository: RepositoryProviderContext.of(context).readHistories,
@@ -794,6 +801,15 @@ class _BookAddEditHistorySheet extends State<BookAddEditHistorySheet> {
     super.initState();
   }
 
+  @override
+  void dispose() {
+    _dateFromNotifier.dispose();
+    _dateToNotifier.dispose();
+    _pageFromEditingController.dispose();
+    _pageToEditingController.dispose();
+    super.dispose();
+  }
+
   Future<void> _save() async {
     setState(() {
       _isSaving = true;
@@ -824,11 +840,16 @@ class _BookAddEditHistorySheet extends State<BookAddEditHistorySheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(children: [
-      Form(
+    return SingleChildScrollView(
+      child: Form(
         key: _formKey,
         child: Padding(
-          padding: EdgeInsets.fromLTRB(16, 32, 16, 48),
+          padding: EdgeInsets.fromLTRB(
+            16,
+            32,
+            16,
+            32 + MediaQuery.of(context).viewInsets.bottom,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             spacing: 16,
@@ -919,8 +940,8 @@ class _BookAddEditHistorySheet extends State<BookAddEditHistorySheet> {
             ],
           ),
         ),
-      )
-    ]);
+      ),
+    );
   }
 }
 
