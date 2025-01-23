@@ -625,24 +625,116 @@ class _BookReadHistoriesPage extends State<BookReadHistoriesPage> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: 0,
       children: [
-        Padding(
-          padding: EdgeInsets.all(8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "From page ${_list[index].pageFrom} to page ${_list[index].pageTo}",
-                style: TextTheme.of(context).bodyLarge,
-              ),
-              Text(
-                "${_dateFormatter.format(_list[index].dateTimeFrom)}-${_dateFormatter.format(_list[index].dateTimeTo)}",
-                style: TextTheme.of(context).bodyMedium,
-              )
-            ],
+        InkWell(
+          onTap: () async {
+            final result = await BookHistoryActionSheet.show(context);
+            if (result == null || !context.mounted) return;
+
+            if (result == BookHistoryActionSheetResult.edit) {
+              await BookAddEditHistorySheet.showEdit(context, _list[index]);
+            } else if (result == BookHistoryActionSheetResult.delete) {
+              final result = await showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text("Delete Confirmation"),
+                  content:
+                      const Text("Are you sure delete this reading session?"),
+                  actions: [
+                    TextButton(
+                        style: TextButton.styleFrom(
+                          textStyle: TextTheme.of(context).labelLarge,
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).pop(false);
+                        },
+                        child: Text("Cancel")),
+                    TextButton(
+                        style: TextButton.styleFrom(
+                          textStyle: TextTheme.of(context).labelLarge,
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).pop(true);
+                        },
+                        child: Text("OK"))
+                  ],
+                ),
+              );
+              if (result == null || !result) return;
+
+              await widget.repository.delete(_list[index].id!);
+            }
+            if (!context.mounted) return;
+            _refresh();
+          },
+          child: Padding(
+            padding: EdgeInsets.all(8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "From page ${_list[index].pageFrom} to page ${_list[index].pageTo}",
+                  style: TextTheme.of(context).bodyLarge,
+                ),
+                Text(
+                  "${_dateFormatter.format(_list[index].dateTimeFrom)}-${_dateFormatter.format(_list[index].dateTimeTo)}",
+                  style: TextTheme.of(context).bodyMedium,
+                )
+              ],
+            ),
           ),
         ),
         Divider(
           height: 1,
+        )
+      ],
+    );
+  }
+}
+
+enum BookHistoryActionSheetResult {
+  edit,
+  delete;
+}
+
+class BookHistoryActionSheet extends StatelessWidget {
+  const BookHistoryActionSheet({super.key});
+
+  static Future<BookHistoryActionSheetResult?> show(BuildContext context) {
+    return showModalBottomSheet<BookHistoryActionSheetResult>(
+      context: context,
+      builder: (context) => BookHistoryActionSheet(),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                  child: Text(
+                    "Action",
+                    style: TextTheme.of(context).titleLarge,
+                  )),
+              ListTile(
+                leading: const Icon(Icons.edit),
+                title: const Text("Edit"),
+                onTap: () => Navigator.of(context)
+                    .pop(BookHistoryActionSheetResult.edit),
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete),
+                title: const Text("Remove"),
+                onTap: () => Navigator.of(context)
+                    .pop(BookHistoryActionSheetResult.delete),
+              )
+            ],
+          ),
         )
       ],
     );
@@ -690,6 +782,17 @@ class _BookAddEditHistorySheet extends State<BookAddEditHistorySheet> {
       TextEditingController();
   final TextEditingController _pageToEditingController =
       TextEditingController();
+
+  @override
+  void initState() {
+    if (widget.readHistory != null) {
+      _dateFromNotifier.value = widget.readHistory?.dateTimeFrom;
+      _dateToNotifier.value = widget.readHistory?.dateTimeTo;
+      _pageFromEditingController.text = widget.readHistory!.pageFrom.toString();
+      _pageToEditingController.text = widget.readHistory!.pageTo.toString();
+    }
+    super.initState();
+  }
 
   Future<void> _save() async {
     setState(() {
@@ -1074,6 +1177,8 @@ class _DateTimeFormField extends FormFieldState<DateTime> {
   @override
   void initState() {
     widget.controller.addListener(_handleControllerChange);
+    setValue(widget.controller.value);
+    _updateText(value);
     super.initState();
   }
 
@@ -1115,10 +1220,14 @@ class _DateTimeFormField extends FormFieldState<DateTime> {
     super.didUpdateWidget(oldWidget);
   }
 
-  @override
-  void didChange(DateTime? value) {
+  _updateText(DateTime? value) {
     final formatted = value == null ? "" : _dateFormatter.format(value);
     if (formatted != _textController.text) _textController.text = formatted;
+  }
+
+  @override
+  void didChange(DateTime? value) {
+    _updateText(value);
     super.didChange(value);
   }
 
