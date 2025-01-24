@@ -9,30 +9,28 @@ import 'component/date_time_field.dart';
 class BookAddEditHistorySheet extends StatefulWidget {
   final int? bookId;
   final BookReadHistoryEntity? readHistory;
-  final BookReadHistoryRepository repository;
 
-  const BookAddEditHistorySheet(
-      {super.key, this.bookId, this.readHistory, required this.repository});
+  const BookAddEditHistorySheet._({super.key, this.bookId, this.readHistory});
 
   static Future<void> showAdd(BuildContext context, int bookId) {
     return showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        builder: (context) => BookAddEditHistorySheet(
-              bookId: bookId,
-              repository: RepositoryProviderContext.of(context).readHistories,
-            ));
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => BookAddEditHistorySheet._(
+        bookId: bookId,
+      ),
+    );
   }
 
   static Future<void> showEdit(
       BuildContext context, BookReadHistoryEntity readHistory) {
     return showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        builder: (context) => BookAddEditHistorySheet(
-              readHistory: readHistory,
-              repository: RepositoryProviderContext.of(context).readHistories,
-            ));
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => BookAddEditHistorySheet._(
+        readHistory: readHistory,
+      ),
+    );
   }
 
   @override
@@ -79,15 +77,16 @@ class _BookAddEditHistorySheet extends State<BookAddEditHistorySheet> {
       _isSaving = true;
     });
 
+    final repository = RepositoryProviderContext.get(context).readHistories;
     if (widget.readHistory == null) {
-      await widget.repository.add(BookReadHistoryEntity(
+      await repository.add(BookReadHistoryEntity(
           bookId: widget.bookId!,
           dateTimeFrom: _dateFromNotifier.value!,
           dateTimeTo: _dateToNotifier.value!,
           pageFrom: _pageFrom,
           pageTo: _pageTo));
     } else {
-      await widget.repository.update(BookReadHistoryEntity(
+      await repository.update(BookReadHistoryEntity(
           bookId: widget.readHistory!.bookId,
           dateTimeFrom: _dateFromNotifier.value!,
           dateTimeTo: _dateToNotifier.value!,

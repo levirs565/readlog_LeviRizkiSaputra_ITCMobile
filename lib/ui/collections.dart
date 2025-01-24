@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 
 class CollectionsPage extends StatefulWidget {
-
-  static CollectionsPage create() {
-    return CollectionsPage();
-  }
+  const CollectionsPage({super.key});
 
   @override
   State<CollectionsPage> createState() => _CollectionsPage();

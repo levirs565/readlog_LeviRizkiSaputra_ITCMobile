@@ -12,12 +12,12 @@ class HomePage extends StatefulWidget {
 class _Destination {
   final int index;
   final NavigationDestination navigationDestination;
-  final WidgetBuilder builder;
+  final Widget widget;
 
   const _Destination({
     required this.index,
     required this.navigationDestination,
-    required this.builder,
+    required this.widget,
   });
 }
 
@@ -27,7 +27,8 @@ class _HomePage extends State<HomePage> {
 
   @override
   void initState() {
-    _destinations = [
+    super.initState();
+    _destinations = const [
       _Destination(
         index: 0,
         navigationDestination: const NavigationDestination(
@@ -35,17 +36,16 @@ class _HomePage extends State<HomePage> {
           selectedIcon: Icon(Icons.book),
           label: "Books",
         ),
-        builder: (context) => BooksPage.create(context),
+        widget: BooksPage(),
       ),
       _Destination(index: 1,
           navigationDestination: NavigationDestination(
             icon: Icon(Icons.collections_bookmark_outlined),
             label: "Collections",
             selectedIcon: Icon(Icons.collections_bookmark),
-          ), builder: (context) => CollectionsPage.create()
+          ), widget: CollectionsPage(),
       ),
     ];
-    super.initState();
   }
 
   @override
@@ -65,7 +65,7 @@ class _HomePage extends State<HomePage> {
         children: _destinations.map((destination) {
           return Offstage(
             offstage: destination.index != _selected,
-            child: destination.builder(context),
+            child: destination.widget,
           );
         }).toList(),
       ),

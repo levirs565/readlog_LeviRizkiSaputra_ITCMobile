@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:readlog/ui/read_history_add_edit.dart';
@@ -26,16 +25,17 @@ class BookReadHistorySessionItem extends BookReadHistoryItem {
 
 class BookReadHistoriesPage extends StatefulWidget {
   final int bookId;
-  final BookReadHistoryRepository repository;
 
-  const BookReadHistoriesPage(
-      {super.key, required this.bookId, required this.repository});
+  const BookReadHistoriesPage({super.key, required this.bookId});
 
   static Future<void> show(BuildContext context, int bookId) {
-    return Navigator.of(context).push(MaterialPageRoute(
+    return Navigator.of(context).push(
+      MaterialPageRoute(
         builder: (context) => BookReadHistoriesPage(
-            bookId: bookId,
-            repository: RepositoryProviderContext.of(context).readHistories)));
+          bookId: bookId,
+        ),
+      ),
+    );
   }
 
   @override
@@ -71,8 +71,8 @@ class DateCirclePainter extends CustomPainter {
   @override
   bool shouldRepaint(DateCirclePainter oldDelegate) =>
       color != oldDelegate.color ||
-          radius != oldDelegate.radius ||
-          position != oldDelegate.position;
+      radius != oldDelegate.radius ||
+      position != oldDelegate.position;
 }
 
 class _BookReadHistoriesPage extends State<BookReadHistoriesPage> {
@@ -92,7 +92,8 @@ class _BookReadHistoriesPage extends State<BookReadHistoriesPage> {
       _isLoading = true;
     });
 
-    final sessionList = await widget.repository.getAllByBook(widget.bookId);
+    final repository = RepositoryProviderContext.get(context).readHistories;
+    final sessionList = await repository.getAllByBook(widget.bookId);
 
     List<BookReadHistoryItem> newList = [];
 
@@ -125,29 +126,29 @@ class _BookReadHistoriesPage extends State<BookReadHistoriesPage> {
       ),
       body: _list.isEmpty
           ? Center(
-        child: Text("No read history yet",
-            style: TextTheme.of(context).bodyLarge),
-      )
+              child: Text("No read history yet",
+                  style: TextTheme.of(context).bodyLarge),
+            )
           : ListView.builder(
-        itemCount: _list.length,
-        itemBuilder: (BuildContext context, int index) {
-          int circlePositionParam = index == 0
-              ? -1
-              : index == _list.length - 1
-              ? 1
-              : 0;
-          if (_list[index] is BookReadHistorySessionItem) {
-            return _listTileSession(
-                context,
-                _list[index] as BookReadHistorySessionItem,
-                circlePositionParam);
-          }
-          return _listTileDate(
-              context,
-              _list[index] as BookReadHistoryDateItem,
-              circlePositionParam);
-        },
-      ),
+              itemCount: _list.length,
+              itemBuilder: (BuildContext context, int index) {
+                int circlePositionParam = index == 0
+                    ? -1
+                    : index == _list.length - 1
+                        ? 1
+                        : 0;
+                if (_list[index] is BookReadHistorySessionItem) {
+                  return _listTileSession(
+                      context,
+                      _list[index] as BookReadHistorySessionItem,
+                      circlePositionParam);
+                }
+                return _listTileDate(
+                    context,
+                    _list[index] as BookReadHistoryDateItem,
+                    circlePositionParam);
+              },
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           await BookAddEditHistorySheet.showAdd(context, widget.bookId);
@@ -201,8 +202,8 @@ class _BookReadHistoriesPage extends State<BookReadHistoriesPage> {
     final duration = hour == 0 && minute == 0
         ? "$showSecond second"
         : hour == 0
-        ? "$showMinute minute"
-        : "$hour hour $showMinute minute";
+            ? "$showMinute minute"
+            : "$hour hour $showMinute minute";
     final readRange =
         "From page ${item.session.pageFrom} to page ${item.session.pageTo}";
 
@@ -239,9 +240,10 @@ class _BookReadHistoriesPage extends State<BookReadHistoriesPage> {
               ],
             ),
           );
-          if (result == null || !result) return;
+          if (result == null || !result || !context.mounted) return;
 
-          await widget.repository.delete(item.session.id!);
+          final repository = RepositoryProviderContext.get(context).books;
+          await repository.delete(item.session.id!);
         }
         if (!context.mounted) return;
         _refresh();

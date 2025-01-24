@@ -6,13 +6,7 @@ import 'book_add_edit.dart';
 import 'book_overview.dart';
 
 class BooksPage extends StatefulWidget {
-  final BookRepository repository;
-
-  const BooksPage({super.key, required this.repository});
-
-  static BooksPage create(BuildContext context) {
-    return BooksPage(repository: RepositoryProviderContext.of(context).books);
-  }
+  const BooksPage({super.key});
 
   @override
   State<BooksPage> createState() => _BooksPageState();
@@ -33,7 +27,8 @@ class _BooksPageState extends State<BooksPage> {
       _isLoading = true;
     });
 
-    final newList = await widget.repository.getAll();
+    final bookRepository = RepositoryProviderContext.get(context).books;
+    final newList = await bookRepository.getAll();
 
     setState(() {
       _list = newList;

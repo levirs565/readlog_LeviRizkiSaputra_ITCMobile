@@ -72,17 +72,17 @@ class _TimerView extends State<TimerView> {
 }
 
 class BookReadingTimerPage extends StatefulWidget {
-  final BookReadHistoryRepository repository;
   final int bookId;
 
-  const BookReadingTimerPage(
-      {super.key, required this.repository, required this.bookId});
+  const BookReadingTimerPage({
+    super.key,
+    required this.bookId,
+  });
 
   static Future<void> show(BuildContext context, int bookId) {
     return Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => BookReadingTimerPage(
-            repository: RepositoryProviderContext.of(context).readHistories,
             bookId: bookId),
       ),
     );
@@ -119,7 +119,8 @@ class _BookReadingTimerPage extends State<BookReadingTimerPage> {
       _isSaving = true;
     });
 
-    await widget.repository.add(
+    final repository = RepositoryProviderContext.get(context).readHistories;
+    await repository.add(
       BookReadHistoryEntity(
         bookId: widget.bookId,
         dateTimeFrom: _timerStartTime,

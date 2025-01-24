@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:readlog/ui/read_timer.dart';
@@ -10,24 +9,18 @@ import 'book_add_edit.dart';
 import 'read_histories.dart';
 
 class BookOverviewPage extends StatefulWidget {
-  final BookRepository bookRepository;
-  final BookReadHistoryRepository bookReadHistoryRepository;
   final int id;
 
-  const BookOverviewPage(
-      {super.key,
-        required this.id,
-        required this.bookRepository,
-        required this.bookReadHistoryRepository});
+  const BookOverviewPage({
+    super.key,
+    required this.id,
+  });
 
   static Future<void> show(BuildContext context, int id) {
-    final provider = RepositoryProviderContext.of(context);
     return Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => BookOverviewPage(
-          id: id,
-          bookRepository: provider.books,
-          bookReadHistoryRepository: provider.readHistories,
-        )));
+              id: id,
+            )));
   }
 
   @override
@@ -52,11 +45,12 @@ class _BookOverviewPage extends State<BookOverviewPage> {
       _isLoading = true;
     });
 
-    final book = await widget.bookRepository.getById(widget.id);
+    final repositoryProvider = RepositoryProviderContext.get(context);
+    final book = await repositoryProvider.books.getById(widget.id);
     final lastRead =
-    await widget.bookReadHistoryRepository.getLastByBook(widget.id);
+        await repositoryProvider.readHistories.getLastByBook(widget.id);
     final coverage = analyzeBookReadingProgress(book!.pageCount,
-        await widget.bookReadHistoryRepository.getAllMergedByBook(widget.id));
+        await repositoryProvider.readHistories.getAllMergedByBook(widget.id));
 
     setState(() {
       _isLoading = false;
@@ -117,7 +111,8 @@ class _BookOverviewPage extends State<BookOverviewPage> {
                 },
               );
               if (result != null && result) {
-                await widget.bookRepository.delete(widget.id);
+                final repository = RepositoryProviderContext.get(context).books;
+                await repository.delete(widget.id);
                 if (context.mounted) {
                   Navigator.of(context).pop();
                 }
@@ -131,15 +126,15 @@ class _BookOverviewPage extends State<BookOverviewPage> {
       body: _book == null
           ? null
           : SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            spacing: 16,
-            children: [
-              _detailContainer(context),
-              _readHistoryContainer(context),
-              _readingProgressContainer(context),
-            ],
-          )),
+              child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              spacing: 16,
+              children: [
+                _detailContainer(context),
+                _readHistoryContainer(context),
+                _readingProgressContainer(context),
+              ],
+            )),
     );
   }
 
@@ -162,8 +157,8 @@ class _BookOverviewPage extends State<BookOverviewPage> {
               children: [
                 Expanded(
                     child: LinearProgressIndicator(
-                      value: _book!.readPercentage,
-                    )),
+                  value: _book!.readPercentage,
+                )),
                 Text("${(_book!.readPercentage * 100).round()}%")
               ],
             ),

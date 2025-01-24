@@ -7,26 +7,22 @@ import '../utils.dart';
 
 class BookAddEditSheet extends StatefulWidget {
   final BookEntity? book;
-  final BookRepository repository;
 
-  const BookAddEditSheet({super.key, this.book, required this.repository});
+  const BookAddEditSheet._({super.key, this.book});
 
   static Future<int?> showAdd(BuildContext context) {
     return showModalBottomSheet<int>(
         isScrollControlled: true,
         context: context,
-        builder: (context) => BookAddEditSheet(
-          repository: RepositoryProviderContext.of(context).books,
-        ));
+        builder: (context) => const BookAddEditSheet._());
   }
 
   static Future<int?> showEdit(BuildContext context, BookEntity book) {
     return showModalBottomSheet<int?>(
         context: context,
         isScrollControlled: true,
-        builder: (context) => BookAddEditSheet(
+        builder: (context) => BookAddEditSheet._(
           book: book,
-          repository: RepositoryProviderContext.of(context).books,
         ));
   }
 
@@ -66,13 +62,14 @@ class _BookAddEditSheet extends State<BookAddEditSheet> {
         title: _titleEditingController.text,
         pageCount: int.parse(_pageCountEditingController.text),
         readedPageCount: 0);
+    final repository = RepositoryProviderContext.get(context).books;
 
     try {
       int? result = entity.id;
       if (widget.book?.id == null) {
-        result = await widget.repository.add(entity);
+        result = await repository.add(entity);
       } else {
-        await widget.repository.update(entity);
+        await repository.update(entity);
       }
       if (mounted) {
         Navigator.of(context).pop(result);
