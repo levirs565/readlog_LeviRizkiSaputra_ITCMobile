@@ -19,9 +19,9 @@ class BookAddEditHistorySheet extends StatefulWidget {
         context: context,
         isScrollControlled: true,
         builder: (context) => BookAddEditHistorySheet(
-          bookId: bookId,
-          repository: RepositoryProviderContext.of(context).readHistories,
-        ));
+              bookId: bookId,
+              repository: RepositoryProviderContext.of(context).readHistories,
+            ));
   }
 
   static Future<void> showEdit(
@@ -30,9 +30,9 @@ class BookAddEditHistorySheet extends StatefulWidget {
         context: context,
         isScrollControlled: true,
         builder: (context) => BookAddEditHistorySheet(
-          readHistory: readHistory,
-          repository: RepositoryProviderContext.of(context).readHistories,
-        ));
+              readHistory: readHistory,
+              repository: RepositoryProviderContext.of(context).readHistories,
+            ));
   }
 
   @override
@@ -46,9 +46,13 @@ class _BookAddEditHistorySheet extends State<BookAddEditHistorySheet> {
   final ValueNotifier<DateTime?> _dateFromNotifier = ValueNotifier(null);
   final ValueNotifier<DateTime?> _dateToNotifier = ValueNotifier(null);
   final TextEditingController _pageFromEditingController =
-  TextEditingController();
+      TextEditingController();
   final TextEditingController _pageToEditingController =
-  TextEditingController();
+      TextEditingController();
+
+  int get _pageFrom => int.parse(_pageFromEditingController.text);
+
+  int get _pageTo => int.parse(_pageToEditingController.text);
 
   @override
   void initState() {
@@ -75,22 +79,20 @@ class _BookAddEditHistorySheet extends State<BookAddEditHistorySheet> {
       _isSaving = true;
     });
 
-    final pageFrom = int.parse(_pageFromEditingController.text);
-    final pageTo = int.parse(_pageToEditingController.text);
     if (widget.readHistory == null) {
       await widget.repository.add(BookReadHistoryEntity(
           bookId: widget.bookId!,
           dateTimeFrom: _dateFromNotifier.value!,
           dateTimeTo: _dateToNotifier.value!,
-          pageFrom: pageFrom,
-          pageTo: pageTo));
+          pageFrom: _pageFrom,
+          pageTo: _pageTo));
     } else {
       await widget.repository.update(BookReadHistoryEntity(
           bookId: widget.readHistory!.bookId,
           dateTimeFrom: _dateFromNotifier.value!,
           dateTimeTo: _dateToNotifier.value!,
-          pageFrom: pageFrom,
-          pageTo: pageTo));
+          pageFrom: _pageFrom,
+          pageTo: _pageTo));
     }
 
     if (mounted) {
@@ -172,30 +174,29 @@ class _BookAddEditHistorySheet extends State<BookAddEditHistorySheet> {
               ),
               _extraError != null
                   ? Text(_extraError!,
-                  style: TextTheme.of(context).bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.error,
-                  ))
+                      style: TextTheme.of(context).bodyMedium?.copyWith(
+                            color: Theme.of(context).colorScheme.error,
+                          ))
                   : Container(),
               FilledButton(
                   onPressed: _isSaving
                       ? null
                       : () {
-                    setState(() {
-                      _extraError = null;
-                    });
-                    if (_formKey.currentState!.validate()) {
-                      if (int.parse(_pageFromEditingController.text) >
-                          int.parse(_pageToEditingController.text)) {
-                        setState(() {
-                          _extraError =
-                          "From page must less than to page";
-                        });
-                        return;
-                      }
+                          setState(() {
+                            _extraError = null;
+                          });
+                          if (_formKey.currentState!.validate()) {
+                            if (_pageFrom > _pageTo) {
+                              setState(() {
+                                _extraError =
+                                    "From page must less than to page";
+                              });
+                              return;
+                            }
 
-                      _save();
-                    }
-                  },
+                            _save();
+                          }
+                        },
                   child: Text(widget.readHistory == null ? "Add" : "Save"))
             ],
           ),

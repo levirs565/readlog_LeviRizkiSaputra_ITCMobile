@@ -1,4 +1,3 @@
-
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -95,14 +94,18 @@ class BookReadingTimerPage extends StatefulWidget {
 
 class _BookReadingTimerPage extends State<BookReadingTimerPage> {
   final TextEditingController _pageFromEditingController =
-  TextEditingController();
+      TextEditingController();
   final TextEditingController _pageToEditingController =
-  TextEditingController();
+      TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey();
   String? _extraError;
   DateTime _timerStartTime = DateTime.now();
   bool _isSaving = false;
   bool _isStarted = false;
+
+  int get _pageFrom => int.parse(_pageFromEditingController.text);
+
+  int get _pageTo => int.parse(_pageToEditingController.text);
 
   @override
   void dispose() {
@@ -116,16 +119,13 @@ class _BookReadingTimerPage extends State<BookReadingTimerPage> {
       _isSaving = true;
     });
 
-    final pageFrom = int.parse(_pageFromEditingController.text);
-    final pageTo = int.parse(_pageToEditingController.text);
-
     await widget.repository.add(
       BookReadHistoryEntity(
         bookId: widget.bookId,
         dateTimeFrom: _timerStartTime,
         dateTimeTo: DateTime.now(),
-        pageFrom: pageFrom,
-        pageTo: pageTo,
+        pageFrom: _pageFrom,
+        pageTo: _pageTo,
       ),
     );
 
@@ -173,9 +173,9 @@ class _BookReadingTimerPage extends State<BookReadingTimerPage> {
               ),
               _extraError != null
                   ? Text(_extraError!,
-                  style: TextTheme.of(context).bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.error,
-                  ))
+                      style: TextTheme.of(context).bodyMedium?.copyWith(
+                            color: Theme.of(context).colorScheme.error,
+                          ))
                   : Container(),
               TimerView(
                 isStarted: _isStarted,
@@ -183,37 +183,36 @@ class _BookReadingTimerPage extends State<BookReadingTimerPage> {
               ),
               !_isStarted
                   ? FilledButton.icon(
-                onPressed: () {
-                  setState(() {
-                    _isStarted = true;
-                    _timerStartTime = DateTime.now();
-                  });
-                },
-                icon: const Icon(Icons.play_arrow),
-                label: const Text("Start"),
-              )
+                      onPressed: () {
+                        setState(() {
+                          _isStarted = true;
+                          _timerStartTime = DateTime.now();
+                        });
+                      },
+                      icon: const Icon(Icons.play_arrow),
+                      label: const Text("Start"),
+                    )
                   : FilledButton.icon(
-                onPressed: _isSaving
-                    ? null
-                    : () {
-                  setState(() {
-                    _extraError = "";
-                  });
-                  if (_formKey.currentState!.validate()) {
-                    if (int.parse(_pageFromEditingController.text) >
-                        int.parse(_pageToEditingController.text)) {
-                      setState(() {
-                        _extraError =
-                        "From page must less than to page";
-                      });
-                      return;
-                    }
-                    _saveSession();
-                  }
-                },
-                icon: const Icon(Icons.stop),
-                label: const Text("Stop"),
-              )
+                      onPressed: _isSaving
+                          ? null
+                          : () {
+                              setState(() {
+                                _extraError = "";
+                              });
+                              if (_formKey.currentState!.validate()) {
+                                if (_pageFrom > _pageTo) {
+                                  setState(() {
+                                    _extraError =
+                                        "From page must less than to page";
+                                  });
+                                  return;
+                                }
+                                _saveSession();
+                              }
+                            },
+                      icon: const Icon(Icons.stop),
+                      label: const Text("Stop"),
+                    )
             ],
           ),
         ),
