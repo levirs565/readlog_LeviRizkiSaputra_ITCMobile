@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:readlog/data_context.dart';
 import 'package:readlog/data_impl.dart';
+import 'package:readlog/ui/books.dart';
 import 'package:readlog/ui/home.dart';
 
 late RepositoryProviderImpl repositoryProvider;
@@ -27,7 +28,7 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
         ),
-        home: Builder(builder: (context) => HomePage.create(context)),
+        home: const HomePage(),
       ),
     );
   }
