@@ -480,13 +480,6 @@ class _BookOverviewPage extends State<BookOverviewPage> {
               ),
               FilledButton(
                   onPressed: () async {
-                    await BookAddEditHistorySheet.showAdd(context, widget.id);
-                    if (!mounted) return;
-                    _refresh();
-                  },
-                  child: const Text("Add")),
-              FilledButton(
-                  onPressed: () async {
                     await BookReadHistoriesPage.show(context, widget.id);
                     if (!mounted) return;
                     _refresh();
