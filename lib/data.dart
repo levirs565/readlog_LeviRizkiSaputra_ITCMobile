@@ -4,6 +4,8 @@ class BookEntity {
   final int pageCount;
   final int readedPageCount;
 
+  double get readPercentage => readedPageCount.toDouble() / pageCount.toDouble();
+
   const BookEntity(
       {this.id,
       required this.title,

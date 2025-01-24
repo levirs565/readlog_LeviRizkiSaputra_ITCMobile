@@ -106,6 +106,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _listTile(BuildContext context, BookEntity book) {
+    final readRange = "${book.readedPageCount} of ${book.pageCount} pages read";
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: 0,
@@ -118,18 +119,35 @@ class _HomePageState extends State<HomePage> {
             }
           },
           child: Padding(
-            padding: EdgeInsets.all(8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            padding: EdgeInsets.all(16),
+            child: Row(
+              spacing: 16,
               children: [
-                Text(
-                  book.title,
-                  style: TextTheme.of(context).bodyLarge,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        book.title,
+                        style: TextTheme.of(context).bodyLarge,
+                      ),
+                      Text(
+                        readRange,
+                        style: TextTheme.of(context).bodyMedium,
+                      ),
+                      SizedBox(
+                        height: 8,
+                      ),
+                      LinearProgressIndicator(
+                        value: book.readPercentage,
+                      ),
+                    ],
+                  ),
                 ),
                 Text(
-                  book.pageCount.toString(),
-                  style: TextTheme.of(context).bodyMedium,
-                )
+                  "${(book.readPercentage * 100).round()}%",
+                  style: TextTheme.of(context).titleLarge,
+                ),
               ],
             ),
           ),
@@ -422,8 +440,6 @@ class _BookOverviewPage extends State<BookOverviewPage> {
   }
 
   Widget _detailContainer(BuildContext context) {
-    final readPercentage =
-        _book!.readedPageCount.toDouble() / _book!.pageCount.toDouble();
     return Container(
       padding: EdgeInsets.all(16),
       color: Theme.of(context).colorScheme.surfaceContainer,
@@ -442,9 +458,9 @@ class _BookOverviewPage extends State<BookOverviewPage> {
               children: [
                 Expanded(
                     child: LinearProgressIndicator(
-                  value: readPercentage,
+                  value: _book!.readPercentage,
                 )),
-                Text("${(readPercentage * 100).round()}%")
+                Text("${(_book!.readPercentage * 100).round()}%")
               ],
             ),
           ),
