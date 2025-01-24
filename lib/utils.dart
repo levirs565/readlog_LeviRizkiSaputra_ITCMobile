@@ -45,6 +45,12 @@ List<BookReadingProgressItem> analyzeBookReadingProgress(
   return result;
 }
 
+extension ToDateOnly on DateTime {
+  DateTime toDateOnly() {
+    return DateTime(year, month, day);
+  }
+}
+
 String? dateTimeIsNotEmptyValidator(DateTime? dateTime) {
   if (dateTime == null) {
     return "Cannot empty";
