@@ -71,7 +71,7 @@ class _CollectionsPage extends State<CollectionsPage> {
 
   Widget _listTile(BuildContext context, CollectionEntity collection) {
     return Padding(
-      padding: EdgeInsets.all(8),
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Card(
         child: InkWell(
           onTap: () async {
