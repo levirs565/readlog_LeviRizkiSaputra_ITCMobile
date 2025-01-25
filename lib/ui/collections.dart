@@ -37,9 +37,9 @@ class _CollectionsPage extends State<CollectionsPage> {
 
   _showAdd() async {
       int? id = await CollectionAddEditSheet.showAdd(context);
-      if (!context.mounted || id == null) return;
-      // await BookOverviewPage.show(context, id);
-      // if (!context.mounted) return;
+      if (!mounted || id == null) return;
+      await CollectionBooksPage.show(context, id);
+      if (!mounted) return;
       _refresh();
   }
 
