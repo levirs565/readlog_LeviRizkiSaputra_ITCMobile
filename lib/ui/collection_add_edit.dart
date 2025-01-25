@@ -37,6 +37,14 @@ class _CollectionAddEditSheet extends State<CollectionAddEditSheet> {
   bool _isSaving = false;
 
   @override
+  void initState() {
+    if (widget.collection != null) {
+      _nameEditingController.text = widget.collection!.name;
+    }
+    super.initState();
+  }
+
+  @override
   void dispose() {
     _nameEditingController.dispose();
     super.dispose();
@@ -59,6 +67,7 @@ class _CollectionAddEditSheet extends State<CollectionAddEditSheet> {
     } else {
       await repository.update(
         CollectionEntity(
+          id: widget.collection!.id!,
           name: _nameEditingController.text,
         ),
       );
