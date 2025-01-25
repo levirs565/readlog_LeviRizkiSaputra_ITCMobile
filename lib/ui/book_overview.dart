@@ -30,7 +30,7 @@ class BookOverviewPage extends StatefulWidget {
 class _BookOverviewPage extends State<BookOverviewPage> {
   static final _dateFormatter = DateFormat("dd-MM-yyyy HH:mm");
   bool _isLoading = true;
-  BookEntity? _book = null;
+  BookDetailEntity? _book = null;
   BookReadHistoryEntity? _lastRead = null;
   List<BookReadingProgressItem> _readingProgress = [];
 
@@ -162,6 +162,13 @@ class _BookOverviewPage extends State<BookOverviewPage> {
                 Text("${(_book!.readPercentage * 100).round()}%")
               ],
             ),
+          ),
+          Wrap(
+            runSpacing: 4,
+            spacing: 8,
+            children: _book!.collections.map((element) {
+              return Chip(label: Text(element.name));
+            }).toList(),
           ),
         ],
       ),

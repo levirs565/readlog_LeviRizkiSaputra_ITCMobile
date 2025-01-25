@@ -77,16 +77,56 @@ class BookDataSource implements BookRepository {
 
   BookDataSource(this._db);
 
-  @override
-  Future<int> add(BookEntity book) async {
-    return await _db.insert(bookTable, _BookMapper.toMap(book),
-        conflictAlgorithm: ConflictAlgorithm.fail);
+  Future<void> _insertCollectionBook(
+    Transaction txn,
+    int bookId,
+    int collectionId,
+    ConflictAlgorithm onConflict,
+  ) async {
+    await txn.insert(
+      "collection_books",
+      {
+        "book_id": bookId,
+        "collection_id": collectionId,
+      },
+      conflictAlgorithm: onConflict,
+    );
   }
 
   @override
-  Future<void> update(BookEntity book) async {
-    await _db.update(bookTable, _BookMapper.toMap(book),
-        where: "id = ?", whereArgs: [book.id]);
+  Future<int> add(BookDetailEntity book) async {
+    return await _db.transaction((txn) async {
+      int id = await txn.insert(bookTable, _BookMapper.toMap(book),
+          conflictAlgorithm: ConflictAlgorithm.fail);
+
+      for (final collection in book.collections) {
+        await _insertCollectionBook(txn, id, collection.id!, ConflictAlgorithm.fail);
+      }
+
+      return id;
+    });
+  }
+
+  @override
+  Future<void> update(BookDetailEntity book) async {
+    await _db.transaction((txn) async {
+      await txn.update(bookTable, _BookMapper.toMap(book),
+          where: "id = ?", whereArgs: [book.id]);
+
+      final extraParams = book.collections.map((el) => "?").join(",");
+      final params = [book.id, ...book.collections.map((el) => el.id)];
+
+      await txn.rawQuery("""
+DELETE FROM collection_books 
+WHERE
+  book_id = ? AND
+  collection_id NOT IN ($extraParams)
+""", params);
+
+      for (final collection in book.collections) {
+        await _insertCollectionBook(txn, book.id!, collection.id!, ConflictAlgorithm.ignore);
+      }
+    });
   }
 
   @override
@@ -96,11 +136,22 @@ class BookDataSource implements BookRepository {
   }
 
   @override
-  Future<BookEntity?> getById(int id) async {
+  Future<BookDetailEntity?> getById(int id) async {
     var rows =
         await _db.query(bookDetailsTable, where: "id = ?", whereArgs: [id]);
     if (rows.isEmpty) return null;
-    return _BookMapper.fromMap(rows.first);
+    final book = _BookMapper.fromMap(rows.first);
+    final collectionRows = await _db.rawQuery("""
+SELECT *
+FROM collection_books
+JOIN collections ON collections.id = collection_books.collection_id
+WHERE collection_books.book_id = ?
+""", [id]);
+    final collections = collectionRows.map(_CollectionMapper.fromMap).toList();
+    return BookDetailEntity(
+      book: book,
+      collections: collections,
+    );
   }
 
   @override

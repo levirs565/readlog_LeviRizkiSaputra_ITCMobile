@@ -10,20 +10,28 @@ class BaseBottomSheet extends StatelessWidget {
   }
 
   Widget child;
+  bool scrollable;
 
-  BaseBottomSheet({super.key, required this.child});
+  BaseBottomSheet({super.key, required this.child, this.scrollable = true});
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            16,
-            32,
-            16,
-            32 + MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: child),
-    );
+    final inner = Padding(
+      padding: EdgeInsets.fromLTRB(
+        16,
+        32,
+        16,
+        32 + MediaQuery
+            .of(context)
+            .viewInsets
+            .bottom,
+      ),
+      child: child,);
+    if (scrollable) {
+      return SingleChildScrollView(
+        child: inner,
+      );
+    }
+    return inner;
   }
 }

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:readlog/ui/collections_select.dart';
 
 import '../data.dart';
 import '../data_context.dart';
 import '../utils.dart';
 
 class BookAddEditSheet extends StatefulWidget {
-  final BookEntity? book;
+  final BookDetailEntity? book;
 
   const BookAddEditSheet._({super.key, this.book});
 
@@ -17,13 +18,13 @@ class BookAddEditSheet extends StatefulWidget {
         builder: (context) => const BookAddEditSheet._());
   }
 
-  static Future<int?> showEdit(BuildContext context, BookEntity book) {
+  static Future<int?> showEdit(BuildContext context, BookDetailEntity book) {
     return showModalBottomSheet<int?>(
         context: context,
         isScrollControlled: true,
         builder: (context) => BookAddEditSheet._(
-          book: book,
-        ));
+              book: book,
+            ));
   }
 
   @override
@@ -34,6 +35,7 @@ class _BookAddEditSheet extends State<BookAddEditSheet> {
   final _formKey = GlobalKey<FormState>();
   final _titleEditingController = TextEditingController();
   final _pageCountEditingController = TextEditingController();
+  List<CollectionEntity> _collections = [];
   bool _isSaving = false;
 
   @override
@@ -41,6 +43,7 @@ class _BookAddEditSheet extends State<BookAddEditSheet> {
     if (widget.book != null) {
       _titleEditingController.text = widget.book!.title;
       _pageCountEditingController.text = widget.book!.pageCount.toString();
+      _collections = widget.book!.collections.map((el) => el.copy()).toList();
     }
     super.initState();
   }
@@ -57,11 +60,15 @@ class _BookAddEditSheet extends State<BookAddEditSheet> {
       _isSaving = true;
     });
 
-    final entity = BookEntity(
+    final entity = BookDetailEntity(
+      book: BookEntity(
         id: widget.book?.id,
         title: _titleEditingController.text,
         pageCount: int.parse(_pageCountEditingController.text),
-        readedPageCount: 0);
+        readedPageCount: 0,
+      ),
+      collections: _collections,
+    );
     final repository = RepositoryProviderContext.get(context).books;
 
     try {
@@ -127,14 +134,41 @@ class _BookAddEditSheet extends State<BookAddEditSheet> {
                 validator: stringIsPositiveNumberValidator,
                 enabled: !_isSaving,
               ),
+              GestureDetector(
+                onTap: _isSaving
+                    ? null
+                    : () async {
+                        final result =
+                            await CollectionsSelectSheet.show(context, _collections);
+                        if (result == null) return;
+                        setState(() {
+                          _collections = result;
+                        });
+                      },
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    label: const Text("Collections"),
+                    contentPadding: EdgeInsets.all(8),
+                  ),
+                  isEmpty: _collections.isEmpty,
+                  child: Wrap(
+                    spacing: 4,
+                    runSpacing: 4,
+                    children: _collections.map((collection) {
+                      return Chip(label: Text(collection.name));
+                    }).toList(),
+                  ),
+                ),
+              ),
               FilledButton(
                 onPressed: _isSaving
                     ? null
                     : () {
-                  if (_formKey.currentState!.validate()) {
-                    _save();
-                  }
-                },
+                        if (_formKey.currentState!.validate()) {
+                          _save();
+                        }
+                      },
                 child: Text(
                   widget.book == null ? "Add" : "Save",
                 ),

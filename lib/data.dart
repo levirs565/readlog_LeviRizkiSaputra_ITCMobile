@@ -15,6 +15,18 @@ class BookEntity {
   });
 }
 
+class BookDetailEntity extends BookEntity {
+  final List<CollectionEntity> collections;
+
+  BookDetailEntity({required BookEntity book, required this.collections})
+      : super(
+          id: book.id,
+          title: book.title,
+          pageCount: book.pageCount,
+          readedPageCount: book.readedPageCount,
+        );
+}
+
 class CollectionEntity {
   final int? id;
   final String name;
@@ -23,6 +35,8 @@ class CollectionEntity {
     this.id,
     required this.name,
   });
+
+  CollectionEntity copy() => CollectionEntity(id: id, name: name);
 }
 
 class BookReadHistoryEntity {
@@ -48,13 +62,13 @@ class BookReadRangeEntity {
 }
 
 abstract interface class BookRepository {
-  Future<int> add(BookEntity book);
+  Future<int> add(BookDetailEntity book);
 
-  Future<void> update(BookEntity book);
+  Future<void> update(BookDetailEntity book);
 
   Future<List<BookEntity>> getAll();
 
-  Future<BookEntity?> getById(int id);
+  Future<BookDetailEntity?> getById(int id);
 
   Future<List<BookEntity>> getAllByCollection(int collectionId);
 
