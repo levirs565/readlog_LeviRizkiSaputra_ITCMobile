@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:readlog/ui/books.dart';
 import 'package:readlog/ui/collections.dart';
+import 'package:readlog/ui/statistics.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -38,13 +39,23 @@ class _HomePage extends State<HomePage> {
         ),
         widget: BooksPage(),
       ),
-      _Destination(index: 1,
-          navigationDestination: NavigationDestination(
-            icon: Icon(Icons.collections_bookmark_outlined),
-            label: "Collections",
-            selectedIcon: Icon(Icons.collections_bookmark),
-          ), widget: CollectionsPage(),
+      _Destination(
+        index: 1,
+        navigationDestination: NavigationDestination(
+          icon: Icon(Icons.collections_bookmark_outlined),
+          label: "Collections",
+          selectedIcon: Icon(Icons.collections_bookmark),
+        ),
+        widget: CollectionsPage(),
       ),
+      _Destination(
+        index: 2,
+        navigationDestination: NavigationDestination(
+          icon: Icon(Icons.bar_chart),
+          label: "Statistic",
+        ),
+        widget: StatisticsPage(),
+      )
     ];
   }
 
@@ -52,7 +63,9 @@ class _HomePage extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: NavigationBar(
-        destinations: _destinations.map((destination) => destination.navigationDestination).toList(),
+        destinations: _destinations
+            .map((destination) => destination.navigationDestination)
+            .toList(),
         selectedIndex: _selected,
         onDestinationSelected: (index) {
           setState(() {

@@ -34,8 +34,7 @@ List<BookReadingProgressItem> analyzeBookReadingProgress(
     }
   }
 
-  if (result.isEmpty ||
-      (result.isNotEmpty && result.last.pageTo < pageCount)) {
+  if (result.isEmpty || (result.isNotEmpty && result.last.pageTo < pageCount)) {
     result.add(BookReadingProgressItem(
         hasRead: false,
         pageFrom: result.isEmpty ? 1 : result.last.pageTo + 1,
@@ -49,6 +48,31 @@ extension ToDateOnly on DateTime {
   DateTime toDateOnly() {
     return DateTime(year, month, day);
   }
+}
+
+extension ToUnixTime on DateTime {
+  int toUnixSeconds() => millisecondsSinceEpoch ~/ 1000;
+}
+
+extension FromUnixTime on int {
+  DateTime unixSecondsToDateTime() =>
+      DateTime.fromMillisecondsSinceEpoch(this * 1000);
+}
+
+class ParsedDuration {
+  int second = 0;
+  int minute = 0;
+  int hour = 0;
+
+  ParsedDuration.fromSeconds(int seconds) {
+    second = seconds % Duration.secondsPerMinute;
+    int originalMinute = seconds ~/ Duration.secondsPerMinute;
+    minute = originalMinute % Duration.minutesPerHour;
+    hour = originalMinute ~/ Duration.minutesPerHour;
+  }
+
+  ParsedDuration.fromDuration(Duration duration)
+      : this.fromSeconds(duration.inSeconds);
 }
 
 String? dateTimeIsNotEmptyValidator(DateTime? dateTime) {

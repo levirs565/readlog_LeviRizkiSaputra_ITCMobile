@@ -33,21 +33,16 @@ class _TimerView extends State<TimerView> {
       } else {
         final startTime = widget.startTime;
         _timer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
-          final duration = DateTime.now().difference(startTime);
-          final second = duration.inSeconds;
-          final shownSecond = second % Duration.secondsPerMinute;
-          final minute = second ~/ Duration.secondsPerMinute;
-          final shownMinute = minute % Duration.minutesPerHour;
-          final hour = minute ~/ Duration.minutesPerHour;
+          final duration = ParsedDuration.fromDuration(DateTime.now().difference(startTime));
 
           final minuteSecondStr =
-              '${shownMinute.toString().padLeft(2, '0')}:${shownSecond.toString().padLeft(2, '0')}';
+              '${duration.minute.toString().padLeft(2, '0')}:${duration.second.toString().padLeft(2, '0')}';
 
           setState(() {
-            if (hour == 0) {
+            if (duration.hour == 0) {
               _text = minuteSecondStr;
             } else {
-              _text = '$hour:$minuteSecondStr';
+              _text = '${duration.hour}:$minuteSecondStr';
             }
           });
         });

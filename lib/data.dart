@@ -61,6 +61,14 @@ class BookReadRangeEntity {
   const BookReadRangeEntity({required this.pageFrom, required this.pageTo});
 }
 
+class BookReadStatistic {
+  final int seconds;
+  final int pages;
+  final int books;
+
+  const BookReadStatistic({required this.seconds, required this.pages, required this.books});
+}
+
 abstract interface class BookRepository {
   Future<int> add(BookDetailEntity book);
 
@@ -87,6 +95,8 @@ abstract interface class BookReadHistoryRepository {
   Future<BookReadHistoryEntity?> getLastByBook(int bookId);
 
   Future<void> delete(int id);
+
+  Future<BookReadStatistic> getStatistic(DateTime fromDay, DateTime toDay);
 }
 
 abstract interface class CollectionRepository {

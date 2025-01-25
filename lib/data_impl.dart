@@ -1,3 +1,4 @@
+import 'package:readlog/utils.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'data.dart';
@@ -34,8 +35,8 @@ class _BookReadHistoryMapper {
       <String, Object?>{
         idColumn: entity.id,
         bookIdColumn: entity.bookId,
-        dateTimeFromColumn: entity.dateTimeFrom.millisecondsSinceEpoch ~/ 1000,
-        dateTimeToColumn: entity.dateTimeTo.millisecondsSinceEpoch ~/ 1000,
+        dateTimeFromColumn: entity.dateTimeFrom.toUnixSeconds(),
+        dateTimeToColumn: entity.dateTimeTo.toUnixSeconds(),
         pageFromColumn: entity.pageFrom,
         pageToColumn: entity.pageTo
       };
@@ -44,10 +45,8 @@ class _BookReadHistoryMapper {
       BookReadHistoryEntity(
         id: map[idColumn] as int?,
         bookId: map[bookIdColumn] as int,
-        dateTimeFrom: DateTime.fromMillisecondsSinceEpoch(
-            (map[dateTimeFromColumn] as int) * 1000),
-        dateTimeTo: DateTime.fromMillisecondsSinceEpoch(
-            (map[dateTimeToColumn] as int) * 1000),
+        dateTimeFrom: (map[dateTimeFromColumn] as int).unixSecondsToDateTime(),
+        dateTimeTo: (map[dateTimeToColumn] as int).unixSecondsToDateTime(),
         pageFrom: map[pageFromColumn] as int,
         pageTo: map[pageToColumn] as int,
       );
@@ -100,7 +99,8 @@ class BookDataSource implements BookRepository {
           conflictAlgorithm: ConflictAlgorithm.fail);
 
       for (final collection in book.collections) {
-        await _insertCollectionBook(txn, id, collection.id!, ConflictAlgorithm.fail);
+        await _insertCollectionBook(
+            txn, id, collection.id!, ConflictAlgorithm.fail);
       }
 
       return id;
@@ -124,7 +124,8 @@ WHERE
 """, params);
 
       for (final collection in book.collections) {
-        await _insertCollectionBook(txn, book.id!, collection.id!, ConflictAlgorithm.ignore);
+        await _insertCollectionBook(
+            txn, book.id!, collection.id!, ConflictAlgorithm.ignore);
       }
     });
   }
@@ -227,6 +228,39 @@ class BookReadHistoryDataSource implements BookReadHistoryRepository {
         .map((map) => BookReadRangeEntity(
             pageFrom: map["page_from"] as int, pageTo: map["page_to"] as int))
         .toList();
+  }
+
+  @override
+  Future<BookReadStatistic> getStatistic(
+      DateTime fromDay, DateTime toDay) async {
+    var fromTime = fromDay.toDateOnly().toUnixSeconds(); // inclusive
+    var toTime =
+        toDay.toDateOnly().add(Duration(days: 1)).toUnixSeconds(); // exclusive
+
+    final rows = await database.rawQuery("""
+SELECT 
+  SUM(MIN(date_time_to, ?) - MAX(date_time_from, ?)) AS seconds,
+  SUM(page_to - page_from + 1) AS pages,
+  COUNT(DISTINCT book_id) AS books
+FROM read_histories
+WHERE 
+  (date_time_from >= ? AND date_time_from < ?) OR
+  (date_time_to >= ? AND date_time_to < ?)
+""", [toTime, fromTime, fromTime, toTime, fromTime, toTime]);
+    int seconds = 0;
+    int pages = 0;
+    int books = 0;
+    if (rows.isNotEmpty) {
+      seconds = rows.first["seconds"] as int;
+      pages = rows.first["pages"] as int;
+      books = rows.first["books"] as int;
+    }
+
+    return BookReadStatistic(
+      seconds: seconds,
+      pages: pages,
+      books: books,
+    );
   }
 }
 
