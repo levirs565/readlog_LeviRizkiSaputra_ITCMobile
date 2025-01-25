@@ -53,10 +53,24 @@ class _BookReadHistoryMapper {
       );
 }
 
+class _CollectionMapper {
+  static final idColumn = "id";
+  static final nameColumn = "name";
+
+  static Map<String, Object?> toMap(CollectionEntity entity) =>
+      {idColumn: entity.id, nameColumn: entity.name};
+
+  static CollectionEntity fromMap(Map<String, Object?> map) => CollectionEntity(
+        id: map[idColumn] as int?,
+        name: map[nameColumn] as String,
+      );
+}
+
 final bookTable = "books";
 final bookDetailsTable = "book_details";
 final readHistoryTable = "read_histories";
 final readRangesTable = "book_read_ranges";
+final collectionsTable = "collections";
 
 class BookDataSource implements BookRepository {
   Database _db;
@@ -125,7 +139,9 @@ class BookReadHistoryDataSource implements BookReadHistoryRepository {
   @override
   Future<List<BookReadHistoryEntity>> getAllByBook(int bookId) async {
     final list = await database.query(readHistoryTable,
-        where: "book_id = ?", whereArgs: [bookId], orderBy: "date_time_from DESC");
+        where: "book_id = ?",
+        whereArgs: [bookId],
+        orderBy: "date_time_from DESC");
     return list.map(_BookReadHistoryMapper.fromMap).toList();
   }
 
@@ -151,10 +167,44 @@ class BookReadHistoryDataSource implements BookReadHistoryRepository {
   }
 }
 
+class CollectionDataSource implements CollectionRepository {
+  Database database;
+
+  CollectionDataSource(this.database);
+
+  @override
+  Future<int> add(CollectionEntity collection) async {
+    return await database.insert(
+        collectionsTable, _CollectionMapper.toMap(collection));
+  }
+
+  @override
+  Future<void> delete(int id) async {
+    await database.delete(collectionsTable, where: "id = ?", whereArgs: [id]);
+  }
+
+  @override
+  Future<List<CollectionEntity>> getAll() async {
+    final rows = await database.query(collectionsTable);
+    return rows.map(_CollectionMapper.fromMap).toList();
+  }
+
+  @override
+  Future<void> update(CollectionEntity collection) async {
+    await database.update(
+      collectionsTable,
+      _CollectionMapper.toMap(collection),
+      where: "id = ?",
+      whereArgs: [collection.id],
+    );
+  }
+}
+
 class RepositoryProviderImpl implements RepositoryProvider {
   late Database db;
   late BookDataSource bookDataSource;
   late BookReadHistoryDataSource bookReadHistoryDataSource;
+  late CollectionDataSource collectionDataSource;
 
   Future<void> open() async {
     final dbPath = join(await getDatabasesPath(), "db");
@@ -258,8 +308,15 @@ LEFT JOIN book_readed_counts
   ON book_readed_counts.book_id = books.id   
 """);
     });
+    await db.execute("""
+CREATE TABLE IF NOT EXISTS collections(
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL
+)
+""");
     bookDataSource = BookDataSource(db);
     bookReadHistoryDataSource = BookReadHistoryDataSource(db);
+    collectionDataSource = CollectionDataSource(db);
   }
 
   @override
@@ -267,4 +324,7 @@ LEFT JOIN book_readed_counts
 
   @override
   BookReadHistoryRepository get readHistories => bookReadHistoryDataSource;
+
+  @override
+  CollectionRepository get collections => collectionDataSource;
 }

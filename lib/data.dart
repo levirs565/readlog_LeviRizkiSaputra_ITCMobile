@@ -4,13 +4,25 @@ class BookEntity {
   final int pageCount;
   final int readedPageCount;
 
-  double get readPercentage => readedPageCount.toDouble() / pageCount.toDouble();
+  double get readPercentage =>
+      readedPageCount.toDouble() / pageCount.toDouble();
 
-  const BookEntity(
-      {this.id,
-      required this.title,
-      required this.pageCount,
-      required this.readedPageCount});
+  const BookEntity({
+    this.id,
+    required this.title,
+    required this.pageCount,
+    required this.readedPageCount,
+  });
+}
+
+class CollectionEntity {
+  final int? id;
+  final String name;
+
+  const CollectionEntity({
+    this.id,
+    required this.name,
+  });
 }
 
 class BookReadHistoryEntity {
@@ -19,13 +31,14 @@ class BookReadHistoryEntity {
   final DateTime dateTimeFrom, dateTimeTo;
   final int pageFrom, pageTo;
 
-  const BookReadHistoryEntity(
-      {this.id,
-      required this.bookId,
-      required this.dateTimeFrom,
-      required this.dateTimeTo,
-      required this.pageFrom,
-      required this.pageTo});
+  const BookReadHistoryEntity({
+    this.id,
+    required this.bookId,
+    required this.dateTimeFrom,
+    required this.dateTimeTo,
+    required this.pageFrom,
+    required this.pageTo,
+  });
 }
 
 class BookReadRangeEntity {
@@ -60,8 +73,20 @@ abstract interface class BookReadHistoryRepository {
   Future<void> delete(int id);
 }
 
+abstract interface class CollectionRepository {
+  Future<int> add(CollectionEntity collection);
+
+  Future<void> update(CollectionEntity collection);
+
+  Future<List<CollectionEntity>> getAll();
+
+  Future<void> delete(int id);
+}
+
 abstract interface class RepositoryProvider {
   BookRepository get books;
 
   BookReadHistoryRepository get readHistories;
+
+  CollectionRepository get collections;
 }
