@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:readlog/data.dart';
 import 'package:readlog/data_context.dart';
 import 'package:readlog/ui/collection_add_edit.dart';
+import 'package:readlog/ui/collection_books.dart';
 
 class CollectionsPage extends StatefulWidget {
   const CollectionsPage({super.key});
@@ -72,11 +73,18 @@ class _CollectionsPage extends State<CollectionsPage> {
     return Padding(
       padding: EdgeInsets.all(8),
       child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(
-            collection.name,
-            style: TextTheme.of(context).bodyLarge,
+        child: InkWell(
+          onTap: () async {
+            await CollectionBooksPage.show(context, collection.id!);
+            if (!mounted) return;
+            _refresh();
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              collection.name,
+              style: TextTheme.of(context).bodyLarge,
+            ),
           ),
         ),
       ),

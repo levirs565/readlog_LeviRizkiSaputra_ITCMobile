@@ -107,6 +107,18 @@ class BookDataSource implements BookRepository {
   Future<void> delete(int id) async {
     await _db.delete(bookTable, where: "id = ?", whereArgs: [id]);
   }
+
+  @override
+  Future<List<BookEntity>> getAllByCollection(int collectionId) async {
+    final rows = await _db.rawQuery("""
+SELECT
+  *
+FROM collection_books
+JOIN book_details ON collection_books.book_id = book_details.id
+WHERE collection_books.collection_id = ?
+""", [collectionId]);
+    return rows.map(_BookMapper.fromMap).toList();
+  }
 }
 
 class BookReadHistoryDataSource implements BookReadHistoryRepository {
@@ -197,6 +209,18 @@ class CollectionDataSource implements CollectionRepository {
       where: "id = ?",
       whereArgs: [collection.id],
     );
+  }
+
+  @override
+  Future<CollectionEntity?> getById(int id) async {
+    final rows = await database.query(
+      collectionsTable,
+      where: "id = ?",
+      whereArgs: [id],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return _CollectionMapper.fromMap(rows.first);
   }
 }
 
@@ -312,6 +336,15 @@ LEFT JOIN book_readed_counts
 CREATE TABLE IF NOT EXISTS collections(
   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL
+)
+""");
+    await db.execute("""
+CREATE TABLE IF NOT EXISTS collection_books(
+  collection_id INTEGER NOT NULL,
+  book_id INTEGER NOT NULL,
+  FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  PRIMARY KEY (collection_id, book_id)
 )
 """);
     bookDataSource = BookDataSource(db);

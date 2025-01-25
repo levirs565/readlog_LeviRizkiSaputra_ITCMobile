@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:readlog/ui/component/book_list_view.dart';
 
 import '../data.dart';
 import '../data_context.dart';
@@ -48,12 +49,17 @@ class _BooksPageState extends State<BooksPage> {
       ),
       body: _list.isEmpty
           ? Center(
-        child: Text("No book found"),
-      )
-          : ListView.builder(
-        itemCount: _list.length,
-        itemBuilder: (context, index) => _listTile(context, _list[index]),
-      ),
+              child: Text("No book found"),
+            )
+          : BookListView(
+              list: _list,
+              onTap: (BookEntity book) async {
+                await BookOverviewPage.show(context, book.id!);
+                if (mounted) {
+                  _refresh();
+                }
+              },
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           int? id = await BookAddEditSheet.showAdd(context);
@@ -64,60 +70,6 @@ class _BooksPageState extends State<BooksPage> {
         },
         child: const Icon(Icons.add),
       ),
-    );
-  }
-
-  Widget _listTile(BuildContext context, BookEntity book) {
-    final readRange = "${book.readedPageCount} of ${book.pageCount} ui read";
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      spacing: 0,
-      children: [
-        InkWell(
-          onTap: () async {
-            await BookOverviewPage.show(context, book.id!);
-            if (mounted) {
-              _refresh();
-            }
-          },
-          child: Padding(
-            padding: EdgeInsets.all(16),
-            child: Row(
-              spacing: 16,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        book.title,
-                        style: TextTheme.of(context).bodyLarge,
-                      ),
-                      Text(
-                        readRange,
-                        style: TextTheme.of(context).bodyMedium,
-                      ),
-                      SizedBox(
-                        height: 8,
-                      ),
-                      LinearProgressIndicator(
-                        value: book.readPercentage,
-                      ),
-                    ],
-                  ),
-                ),
-                Text(
-                  "${(book.readPercentage * 100).round()}%",
-                  style: TextTheme.of(context).titleLarge,
-                ),
-              ],
-            ),
-          ),
-        ),
-        Divider(
-          height: 1,
-        )
-      ],
     );
   }
 }

@@ -56,6 +56,8 @@ abstract interface class BookRepository {
 
   Future<BookEntity?> getById(int id);
 
+  Future<List<BookEntity>> getAllByCollection(int collectionId);
+
   Future<void> delete(int id);
 }
 
@@ -75,6 +77,8 @@ abstract interface class BookReadHistoryRepository {
 
 abstract interface class CollectionRepository {
   Future<int> add(CollectionEntity collection);
+
+  Future<CollectionEntity?> getById(int id);
 
   Future<void> update(CollectionEntity collection);
 

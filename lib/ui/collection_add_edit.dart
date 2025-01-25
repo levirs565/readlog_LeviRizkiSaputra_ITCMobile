@@ -17,6 +17,16 @@ class CollectionAddEditSheet extends StatefulWidget {
     );
   }
 
+  static Future<int?> showEdit(
+      BuildContext context, CollectionEntity collection) {
+    return BaseBottomSheet.showModal(
+      context: context,
+      builder: (context) => CollectionAddEditSheet._(
+        collection: collection,
+      ),
+    );
+  }
+
   @override
   State<CollectionAddEditSheet> createState() => _CollectionAddEditSheet();
 }
