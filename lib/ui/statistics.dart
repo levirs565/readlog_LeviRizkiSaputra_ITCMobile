@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:readlog/ui/statictic_quick.dart';
+import 'package:readlog/ui/statistic_chart.dart';
 
 class StatisticsPage extends StatefulWidget {
   const StatisticsPage({super.key});
@@ -32,7 +33,7 @@ class _StatisticsPage extends State<StatisticsPage> {
         body: const TabBarView(
           children: [
             QuickStatistic(),
-            const Center(child: Text("Monthly")),
+            ChartStatistic(),
           ],
         ),
       ),
