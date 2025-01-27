@@ -4,14 +4,14 @@ import 'package:readlog/data_context.dart';
 import 'package:readlog/ui/component/date_time_field.dart';
 import 'package:readlog/utils.dart';
 
-class QuickStatistic extends StatefulWidget {
-  const QuickStatistic({super.key});
+class RangeStatistic extends StatefulWidget {
+  const RangeStatistic({super.key});
 
   @override
-  State<QuickStatistic> createState() => _QuickStatistic();
+  State<RangeStatistic> createState() => _RangeStatistic();
 }
 
-class _QuickStatistic extends State<QuickStatistic> {
+class _RangeStatistic extends State<RangeStatistic> {
   final ValueNotifier<DateTime?> _fromValueNotifier = ValueNotifier(null);
   final ValueNotifier<DateTime?> _toValueNotifier = ValueNotifier(null);
   bool _isLoading = false;

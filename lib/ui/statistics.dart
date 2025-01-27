@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:readlog/ui/statictic_quick.dart';
-import 'package:readlog/ui/statistic_chart.dart';
+import 'package:readlog/ui/statistic_range.dart';
+import 'package:readlog/ui/statistic_weekly.dart';
 
 class StatisticsPage extends StatefulWidget {
   const StatisticsPage({super.key});
@@ -18,22 +18,22 @@ class _StatisticsPage extends State<StatisticsPage> {
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          title: Text("Read Log"),
+          title: Text("Statistic"),
           bottom: const TabBar(
             tabs: [
               Tab(
-                text: "Quick",
+                text: "Weekly",
               ),
               Tab(
-                text: "Monthly",
+                text: "Range",
               ),
             ],
           ),
         ),
         body: const TabBarView(
           children: [
-            QuickStatistic(),
-            ChartStatistic(),
+            WeeklyStatistic(),
+            RangeStatistic(),
           ],
         ),
       ),

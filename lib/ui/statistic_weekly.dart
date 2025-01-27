@@ -5,14 +5,14 @@ import 'package:readlog/ui/component/bar_chart.dart';
 import 'package:readlog/ui/component/week_scroll_picker.dart';
 import 'package:readlog/utils.dart';
 
-class ChartStatistic extends StatefulWidget {
-  const ChartStatistic({super.key});
+class WeeklyStatistic extends StatefulWidget {
+  const WeeklyStatistic({super.key});
 
   @override
-  State<ChartStatistic> createState() => _ChartStatistic();
+  State<WeeklyStatistic> createState() => _WeeklyStatistic();
 }
 
-class _ChartStatistic extends State<ChartStatistic> {
+class _WeeklyStatistic extends State<WeeklyStatistic> {
   static final _dayDateFormat = DateFormat("E");
   static final _dateDateFormat = DateFormat("dd");
   static final _monthNames = DateFormat().dateSymbols.MONTHS;
