@@ -15,7 +15,7 @@ class BarChartData {
   });
 }
 
-class BarChartItem extends StatefulWidget {
+class BarChartItem extends StatelessWidget {
   final BarChartData data;
   final double height;
   final int maxValue;
@@ -28,37 +28,35 @@ class BarChartItem extends StatefulWidget {
   });
 
   @override
-  State<BarChartItem> createState() => _BarChartItem();
-}
-
-class _BarChartItem extends State<BarChartItem> {
-  @override
   Widget build(BuildContext context) {
     return Column(
       spacing: 8,
       children: [
         Tooltip(
           triggerMode: TooltipTriggerMode.tap,
-          message: widget.data.tooltip,
+          message: data.tooltip,
           child: SizedBox(
-            height: widget.height,
+            height: height,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Container(
+                AnimatedContainer(
                   decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.secondary,
                       borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(4), topRight: Radius.circular(4))),
+                          topLeft: Radius.circular(4),
+                          topRight: Radius.circular(4))),
                   width: 16,
-                  height: widget.height *
-                      (widget.data.value.toDouble() / widget.maxValue.toDouble()),
+                  height:
+                      height * (data.value.toDouble() / maxValue.toDouble()),
+                  duration: const Duration(milliseconds: 500),
+                  curve: Easing.standard,
                 ),
               ],
             ),
           ),
         ),
-        Text(widget.data.label),
+        Text(data.label),
       ],
     );
   }
