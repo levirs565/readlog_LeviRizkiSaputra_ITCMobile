@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:readlog/data.dart';
 
 class BookReadingProgressItem {
@@ -47,6 +48,52 @@ List<BookReadingProgressItem> analyzeBookReadingProgress(
 extension ToDateOnly on DateTime {
   DateTime toDateOnly() {
     return DateTime(year, month, day);
+  }
+}
+
+int getWeekByDay(int day) => (day / 7).ceil();
+
+class WeekDate {
+  final int year;
+  final int month;
+  final int week;
+
+  WeekDate.now()
+      : year = DateTime.now().year,
+        month = DateTime.now().month,
+        week = getWeekByDay(DateTime.now().day);
+
+  WeekDate({required this.year, required this.month, required this.week});
+
+  DateTime getFirstDateTime() => DateTime(year, month, 1 + (week - 1) * 7);
+
+  WeekDate getPrevious() {
+    if (week > 1) {
+      return WeekDate(year: year, month: month, week: week - 1);
+    }
+    if (month > 1) {
+      return WeekDate(
+        year: year,
+        month: month - 1,
+        week: getWeekByDay(DateUtils.getDaysInMonth(year, month - 1)),
+      );
+    }
+    return WeekDate(
+      year: year - 1,
+      month: 12,
+      week: getWeekByDay(DateUtils.getDaysInMonth(year - 1, 12)),
+    );
+  }
+
+  WeekDate getNext() {
+    final currentMonthWeeks =
+        getWeekByDay(DateUtils.getDaysInMonth(year, month));
+    if (week >= currentMonthWeeks) {
+      return month >= 12
+          ? WeekDate(year: year + 1, month: 1, week: 1)
+          : WeekDate(year: year, month: month + 1, week: 1);
+    }
+    return WeekDate(year: year, month: month, week: week + 1);
   }
 }
 
