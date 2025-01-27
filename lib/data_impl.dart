@@ -251,9 +251,9 @@ WHERE
     int pages = 0;
     int books = 0;
     if (rows.isNotEmpty) {
-      seconds = rows.first["seconds"] as int;
-      pages = rows.first["pages"] as int;
-      books = rows.first["books"] as int;
+      seconds = rows.first["seconds"] as int? ?? 0;
+      pages = rows.first["pages"] as int? ?? 0;
+      books = rows.first["books"] as int? ?? 0;
     }
 
     return BookReadStatistic(

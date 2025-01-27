@@ -120,6 +120,16 @@ class ParsedDuration {
 
   ParsedDuration.fromDuration(Duration duration)
       : this.fromSeconds(duration.inSeconds);
+
+  String toShortFormattedString() {
+    var durationStr = minute == 0 && hour == 0
+        ? "$second seconds"
+        : "$minute minutes";
+    if (hour != 0) {
+      durationStr = "$hour hour $durationStr";
+    }
+    return durationStr;
+  }
 }
 
 String? dateTimeIsNotEmptyValidator(DateTime? dateTime) {

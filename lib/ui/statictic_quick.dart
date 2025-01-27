@@ -77,12 +77,7 @@ class _QuickStatistic extends State<QuickStatistic> {
 
   Widget _statisticView(BuildContext context) {
     final duration = ParsedDuration.fromSeconds(_statistic!.seconds);
-    var durationStr = duration.minute == 0 && duration.hour == 0
-        ? "${duration.second} seconds"
-        : "${duration.minute} minutes";
-    if (duration.hour != 0) {
-      durationStr = "${duration.hour} hour $durationStr";
-    }
+    final durationStr = duration.toShortFormattedString();
 
     return Column(
       spacing: 16,
