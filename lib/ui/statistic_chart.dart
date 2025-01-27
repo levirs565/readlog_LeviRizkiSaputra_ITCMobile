@@ -14,6 +14,7 @@ class ChartStatistic extends StatefulWidget {
 
 class _ChartStatistic extends State<ChartStatistic> {
   static final _dayDateFormat = DateFormat("E");
+  static final _dateDateFormat = DateFormat("dd");
   static final _monthNames = DateFormat().dateSymbols.MONTHS;
   WeekDate _week = WeekDate.now();
   List<BarChartData> _booksChartData = [];
@@ -24,6 +25,15 @@ class _ChartStatistic extends State<ChartStatistic> {
   void initState() {
     _refresh();
     super.initState();
+  }
+
+  Widget _label(DateTime day) {
+    return Column(
+      children: [
+        Text(_dateDateFormat.format(day)),
+        Text(_dayDateFormat.format(day))
+      ],
+    );
   }
 
   _refresh() async {
@@ -39,24 +49,22 @@ class _ChartStatistic extends State<ChartStatistic> {
         day.isBefore(lastDay);
         day = day.add(Duration(days: 1)).toDateOnly()) {
       final statistic = await repository.getStatistic(day, day);
-      final label = _dayDateFormat.format(day);
       booksData.add(BarChartData(
-        label: label,
+        label: _label(day),
         value: statistic.books,
         tooltip: "${statistic.books} books",
       ));
       pagesData.add(BarChartData(
-        label: label,
+        label: _label(day),
         value: statistic.pages,
         tooltip: "${statistic.pages} pages",
       ));
-      durationData.add(
-        BarChartData(
-            label: label,
-            value: statistic.seconds,
-            tooltip: ParsedDuration.fromSeconds(statistic.seconds)
-                .toShortFormattedString()),
-      );
+      durationData.add(BarChartData(
+        label: _label(day),
+        value: statistic.seconds,
+        tooltip: ParsedDuration.fromSeconds(statistic.seconds)
+            .toShortFormattedString(),
+      ));
     }
 
     setState(() {

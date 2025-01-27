@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:readlog/utils.dart';
 
 class BarChartData {
-  final String label;
+  final Widget label;
   final int value;
   final String tooltip;
 
@@ -56,7 +56,7 @@ class BarChartItem extends StatelessWidget {
             ),
           ),
         ),
-        Text(data.label),
+        data.label,
       ],
     );
   }
