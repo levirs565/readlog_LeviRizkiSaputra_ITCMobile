@@ -27,7 +27,8 @@ class _BooksPageState extends State<BooksPage> {
   @override
   void didChangeDependencies() {
     _repositoryProvider = RepositoryProviderContext.get(context);
-    _refreshController.init(context, [_repositoryProvider.books, _repositoryProvider.readHistories]);
+    _refreshController.init(context,
+        [_repositoryProvider.books, _repositoryProvider.readHistories]);
     super.didChangeDependencies();
   }
 
@@ -48,6 +49,12 @@ class _BooksPageState extends State<BooksPage> {
       _list = newList;
       _isLoading = false;
     });
+  }
+
+  _showAdd() async {
+    int? id = await BookAddEditSheet.showAdd(context);
+    if (!mounted || id == null) return;
+    await BookOverviewPage.show(context, id);
   }
 
   @override
@@ -71,11 +78,7 @@ class _BooksPageState extends State<BooksPage> {
               },
             ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          int? id = await BookAddEditSheet.showAdd(context);
-          if (!context.mounted || id == null) return;
-          await BookOverviewPage.show(context, id);
-        },
+        onPressed: _showAdd,
         child: const Icon(Icons.add),
       ),
     );
