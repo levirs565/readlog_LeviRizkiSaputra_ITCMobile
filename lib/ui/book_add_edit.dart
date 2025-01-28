@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:readlog/ui/collections_select.dart';
+import 'package:readlog/ui/component/base_bottom_sheet.dart';
 
 import '../data.dart';
 import '../data_context.dart';
@@ -12,16 +13,13 @@ class BookAddEditSheet extends StatefulWidget {
   const BookAddEditSheet._({super.key, this.book});
 
   static Future<int?> showAdd(BuildContext context) {
-    return showModalBottomSheet<int>(
-        isScrollControlled: true,
-        context: context,
-        builder: (context) => const BookAddEditSheet._());
+    return BaseBottomSheet.showModal(
+        context: context, builder: (context) => const BookAddEditSheet._());
   }
 
   static Future<int?> showEdit(BuildContext context, BookDetailEntity book) {
-    return showModalBottomSheet<int?>(
+    return BaseBottomSheet.showModal(
         context: context,
-        isScrollControlled: true,
         builder: (context) => BookAddEditSheet._(
               book: book,
             ));
@@ -95,86 +93,85 @@ class _BookAddEditSheet extends State<BookAddEditSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return BaseBottomSheet(
       child: Form(
         key: _formKey,
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            16,
-            32,
-            16,
-            32 + MediaQuery.of(context).viewInsets.bottom,
+        child: _formContent(context),
+      ),
+    );
+  }
+
+  _trySave() {
+    if (_formKey.currentState!.validate()) {
+      _save();
+    }
+  }
+
+  Widget _formContent(BuildContext context) {
+    return Column(
+      spacing: 16.0,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          widget.book == null ? "Add Book" : "Edit Book",
+          style: TextTheme.of(context).titleLarge,
+          textAlign: TextAlign.center,
+        ),
+        TextFormField(
+          controller: _titleEditingController,
+          decoration: InputDecoration(
+            border: const OutlineInputBorder(),
+            label: const Text("Title"),
           ),
-          child: Column(
-            spacing: 16.0,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                widget.book == null ? "Add Book" : "Edit Book",
-                style: TextTheme.of(context).titleLarge,
-                textAlign: TextAlign.center,
-              ),
-              TextFormField(
-                controller: _titleEditingController,
-                decoration: InputDecoration(
-                  border: const OutlineInputBorder(),
-                  label: const Text("Title"),
-                ),
-                validator: stringNotEmptyValidator,
-                enabled: !_isSaving,
-              ),
-              TextFormField(
-                controller: _pageCountEditingController,
-                decoration: InputDecoration(
-                  border: const OutlineInputBorder(),
-                  label: const Text("Page Count"),
-                ),
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                validator: stringIsPositiveNumberValidator,
-                enabled: !_isSaving,
-              ),
-              GestureDetector(
-                onTap: _isSaving
-                    ? null
-                    : () async {
-                        final result =
-                            await CollectionsSelectSheet.show(context, _collections);
-                        if (result == null) return;
-                        setState(() {
-                          _collections = result;
-                        });
-                      },
-                child: InputDecorator(
-                  decoration: InputDecoration(
-                    border: const OutlineInputBorder(),
-                    label: const Text("Collections"),
-                    contentPadding: EdgeInsets.all(8),
-                  ),
-                  isEmpty: _collections.isEmpty,
-                  child: Wrap(
-                    spacing: 4,
-                    runSpacing: 4,
-                    children: _collections.map((collection) {
-                      return Chip(label: Text(collection.name));
-                    }).toList(),
-                  ),
-                ),
-              ),
-              FilledButton(
-                onPressed: _isSaving
-                    ? null
-                    : () {
-                        if (_formKey.currentState!.validate()) {
-                          _save();
-                        }
-                      },
-                child: Text(
-                  widget.book == null ? "Add" : "Save",
-                ),
-              )
-            ],
+          validator: stringNotEmptyValidator,
+          enabled: !_isSaving,
+        ),
+        TextFormField(
+          controller: _pageCountEditingController,
+          decoration: InputDecoration(
+            border: const OutlineInputBorder(),
+            label: const Text("Page Count"),
           ),
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          validator: stringIsPositiveNumberValidator,
+          enabled: !_isSaving,
+        ),
+        _collectionField(context),
+        FilledButton(
+          onPressed: _isSaving ? null : _trySave,
+          child: Text(
+            widget.book == null ? "Add" : "Save",
+          ),
+        )
+      ],
+    );
+  }
+
+  _editCollections() async {
+    final result = await CollectionsSelectSheet.show(context, _collections);
+    if (result == null) return;
+    setState(() {
+      _collections = result;
+    });
+  }
+
+  Widget _collectionField(BuildContext context) {
+    return GestureDetector(
+      onTap: _isSaving ? null : _editCollections,
+      child: InputDecorator(
+        decoration: InputDecoration(
+          border: const OutlineInputBorder(),
+          label: const Text("Collections"),
+          contentPadding: EdgeInsets.all(8),
+        ),
+        isEmpty: _collections.isEmpty,
+        child: Wrap(
+          spacing: 4,
+          runSpacing: 4,
+          children: _collections.map((collection) {
+            return Chip(label: Text(collection.name));
+          }).toList(),
         ),
       ),
     );
