@@ -78,43 +78,47 @@ class _CollectionAddEditSheet extends State<CollectionAddEditSheet> {
     Navigator.of(context).pop(result);
   }
 
+  _trySave() {
+    if (_formKey.currentState!.validate()) {
+      _save();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BaseBottomSheet(
       child: Form(
         key: _formKey,
-        child: Column(
-          spacing: 16.0,
-          children: [
-            Text(
-              widget.collection == null ? "Add Collection" : "Edit Collection",
-              style: TextTheme.of(context).titleLarge,
-              textAlign: TextAlign.center,
-            ),
-            TextFormField(
-              controller: _nameEditingController,
-              decoration: InputDecoration(
-                border: const OutlineInputBorder(),
-                label: const Text("Title"),
-              ),
-              validator: stringNotEmptyValidator,
-              enabled: !_isSaving,
-            ),
-            FilledButton(
-              onPressed: _isSaving
-                  ? null
-                  : () {
-                      if (_formKey.currentState!.validate()) {
-                        _save();
-                      }
-                    },
-              child: Text(
-                widget.collection == null ? "Add" : "Save",
-              ),
-            )
-          ],
-        ),
+        child: _formContent(context),
       ),
+    );
+  }
+
+  Widget _formContent(BuildContext context) {
+    return Column(
+      spacing: 16.0,
+      children: [
+        Text(
+          widget.collection == null ? "Add Collection" : "Edit Collection",
+          style: TextTheme.of(context).titleLarge,
+          textAlign: TextAlign.center,
+        ),
+        TextFormField(
+          controller: _nameEditingController,
+          decoration: InputDecoration(
+            border: const OutlineInputBorder(),
+            label: const Text("Title"),
+          ),
+          validator: stringNotEmptyValidator,
+          enabled: !_isSaving,
+        ),
+        FilledButton(
+          onPressed: _isSaving ? null : _trySave,
+          child: Text(
+            widget.collection == null ? "Add" : "Save",
+          ),
+        )
+      ],
     );
   }
 }
