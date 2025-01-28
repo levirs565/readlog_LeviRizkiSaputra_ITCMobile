@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:readlog/utils.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -71,7 +72,7 @@ final readHistoryTable = "read_histories";
 final readRangesTable = "book_read_ranges";
 final collectionsTable = "collections";
 
-class BookDataSource implements BookRepository {
+class BookDataSource extends ChangeNotifier implements BookRepository {
   Database _db;
 
   BookDataSource(this._db);
@@ -94,7 +95,7 @@ class BookDataSource implements BookRepository {
 
   @override
   Future<int> add(BookDetailEntity book) async {
-    return await _db.transaction((txn) async {
+    final res = await _db.transaction((txn) async {
       int id = await txn.insert(bookTable, _BookMapper.toMap(book),
           conflictAlgorithm: ConflictAlgorithm.fail);
 
@@ -102,9 +103,10 @@ class BookDataSource implements BookRepository {
         await _insertCollectionBook(
             txn, id, collection.id!, ConflictAlgorithm.fail);
       }
-
       return id;
     });
+    notifyListeners();
+    return res;
   }
 
   @override
@@ -128,6 +130,7 @@ WHERE
             txn, book.id!, collection.id!, ConflictAlgorithm.ignore);
       }
     });
+    notifyListeners();
   }
 
   @override
@@ -158,6 +161,7 @@ WHERE collection_books.book_id = ?
   @override
   Future<void> delete(int id) async {
     await _db.delete(bookTable, where: "id = ?", whereArgs: [id]);
+    notifyListeners();
   }
 
   @override
@@ -173,16 +177,18 @@ WHERE collection_books.collection_id = ?
   }
 }
 
-class BookReadHistoryDataSource implements BookReadHistoryRepository {
+class BookReadHistoryDataSource extends ChangeNotifier implements BookReadHistoryRepository {
   Database database;
 
   BookReadHistoryDataSource(this.database);
 
   @override
   Future<int> add(BookReadHistoryEntity history) async {
-    return await database.insert(
+    final result = await database.insert(
         readHistoryTable, _BookReadHistoryMapper.toMap(history),
         conflictAlgorithm: ConflictAlgorithm.fail);
+    notifyListeners();
+    return result;
   }
 
   @override
@@ -193,11 +199,14 @@ class BookReadHistoryDataSource implements BookReadHistoryRepository {
       where: "id = ?",
       whereArgs: [history.id],
     );
+    notifyListeners();
   }
 
   @override
   Future<void> delete(int id) async {
     await database.delete(readHistoryTable, where: "id = ?", whereArgs: [id]);
+    print("Halo notify delete");
+    notifyListeners();
   }
 
   @override
@@ -264,20 +273,23 @@ WHERE
   }
 }
 
-class CollectionDataSource implements CollectionRepository {
+class CollectionDataSource extends ChangeNotifier implements CollectionRepository {
   Database database;
 
   CollectionDataSource(this.database);
 
   @override
   Future<int> add(CollectionEntity collection) async {
-    return await database.insert(
+    final res = await database.insert(
         collectionsTable, _CollectionMapper.toMap(collection));
+    notifyListeners();
+    return res;
   }
 
   @override
   Future<void> delete(int id) async {
     await database.delete(collectionsTable, where: "id = ?", whereArgs: [id]);
+    notifyListeners();
   }
 
   @override
@@ -294,6 +306,7 @@ class CollectionDataSource implements CollectionRepository {
       where: "id = ?",
       whereArgs: [collection.id],
     );
+    notifyListeners();
   }
 
   @override
@@ -318,6 +331,9 @@ class RepositoryProviderImpl implements RepositoryProvider {
   Future<void> open() async {
     final dbPath = join(await getDatabasesPath(), "db");
     db = await openDatabase(dbPath, version: 1,
+        onConfigure: (Database db) async {
+          db.execute("PRAGMA foreign_keys = ON");
+        },
         onCreate: (Database db, int version) async {
       await db.execute("""
 CREATE TABLE IF NOT EXISTS books(

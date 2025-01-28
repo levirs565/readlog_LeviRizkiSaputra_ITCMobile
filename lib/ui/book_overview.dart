@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:readlog/refresh_controller.dart';
+import 'package:readlog/route_observer_provider.dart';
 import 'package:readlog/ui/read_timer.dart';
 
 import '../data.dart';
@@ -33,11 +35,27 @@ class _BookOverviewPage extends State<BookOverviewPage> {
   BookDetailEntity? _book = null;
   BookReadHistoryEntity? _lastRead = null;
   List<BookReadingProgressItem> _readingProgress = [];
+  late RepositoryProvider _repositoryProvider;
+  late RefreshController _refreshController;
+
+  _BookOverviewPage() {
+    _refreshController = RefreshController(_refresh);
+  }
 
   @override
-  void initState() {
-    _refresh();
-    super.initState();
+  void didChangeDependencies() {
+    _repositoryProvider = RepositoryProviderContext.get(context);
+    _refreshController.init(
+      context,
+      [_repositoryProvider.readHistories, _repositoryProvider.books],
+    );
+    super.didChangeDependencies();
+  }
+
+  @override
+  void dispose() {
+    _refreshController.dispose();
+    super.dispose();
   }
 
   _refresh() async {
@@ -45,12 +63,11 @@ class _BookOverviewPage extends State<BookOverviewPage> {
       _isLoading = true;
     });
 
-    final repositoryProvider = RepositoryProviderContext.get(context);
-    final book = await repositoryProvider.books.getById(widget.id);
+    final book = await _repositoryProvider.books.getById(widget.id);
     final lastRead =
-        await repositoryProvider.readHistories.getLastByBook(widget.id);
+        await _repositoryProvider.readHistories.getLastByBook(widget.id);
     final coverage = analyzeBookReadingProgress(book!.pageCount,
-        await repositoryProvider.readHistories.getAllMergedByBook(widget.id));
+        await _repositoryProvider.readHistories.getAllMergedByBook(widget.id));
 
     setState(() {
       _isLoading = false;
@@ -73,9 +90,6 @@ class _BookOverviewPage extends State<BookOverviewPage> {
             onPressed: () async {
               if (_isLoading || _book == null) return;
               await BookAddEditSheet.showEdit(context, _book!);
-              if (mounted) {
-                _refresh();
-              }
             },
             icon: const Icon(Icons.edit),
             tooltip: "Edit",
@@ -111,7 +125,7 @@ class _BookOverviewPage extends State<BookOverviewPage> {
                 },
               );
               if (result != null && result) {
-                final repository = RepositoryProviderContext.get(context).books;
+                final repository = _repositoryProvider.books;
                 await repository.delete(widget.id);
                 if (context.mounted) {
                   Navigator.of(context).pop();
@@ -194,8 +208,6 @@ class _BookOverviewPage extends State<BookOverviewPage> {
               FilledButton.icon(
                 onPressed: () async {
                   await BookReadingTimerPage.show(context, widget.id);
-                  if (!mounted) return;
-                  _refresh();
                 },
                 icon: const Icon(Icons.timer),
                 label: const Text("Reading Timer"),
@@ -203,8 +215,6 @@ class _BookOverviewPage extends State<BookOverviewPage> {
               FilledButton(
                   onPressed: () async {
                     await BookReadHistoriesPage.show(context, widget.id);
-                    if (!mounted) return;
-                    _refresh();
                   },
                   child: const Text("Show All"))
             ],

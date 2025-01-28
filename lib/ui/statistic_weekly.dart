@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:readlog/data.dart';
 import 'package:readlog/data_context.dart';
+import 'package:readlog/refresh_controller.dart';
 import 'package:readlog/ui/component/bar_chart.dart';
 import 'package:readlog/ui/component/week_scroll_picker.dart';
 import 'package:readlog/utils.dart';
@@ -20,11 +22,30 @@ class _WeeklyStatistic extends State<WeeklyStatistic> {
   List<BarChartData> _booksChartData = [];
   List<BarChartData> _pagesChartData = [];
   List<BarChartData> _durationChartData = [];
+  late RepositoryProvider _repositoryProvider;
+  late final RefreshController _refreshController;
+
+  _WeeklyStatistic() {
+    _refreshController = RefreshController(_refresh);
+  }
 
   @override
-  void initState() {
-    _refresh();
-    super.initState();
+  void didChangeDependencies() {
+    _repositoryProvider = RepositoryProviderContext.get(context);
+    _refreshController.init(
+      context,
+      [
+        _repositoryProvider.readHistories,
+        _repositoryProvider.books,
+      ],
+    );
+    super.didChangeDependencies();
+  }
+
+  @override
+  void dispose() {
+    _refreshController.dispose();
+    super.dispose();
   }
 
   Widget _label(DateTime day) {
@@ -37,7 +58,7 @@ class _WeeklyStatistic extends State<WeeklyStatistic> {
   }
 
   _refresh() async {
-    final repository = RepositoryProviderContext.get(context).readHistories;
+    final repository = _repositoryProvider.readHistories;
 
     List<BarChartData> booksData = [];
     List<BarChartData> pagesData = [];

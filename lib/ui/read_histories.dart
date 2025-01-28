@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:readlog/refresh_controller.dart';
 import 'package:readlog/ui/read_history_add_edit.dart';
 import 'package:readlog/utils.dart';
 
@@ -80,20 +81,39 @@ class _BookReadHistoriesPage extends State<BookReadHistoriesPage> {
   static final _timeFormatter = DateFormat("HH:mm:ss");
   bool _isLoading = true;
   List<BookReadHistoryItem> _list = [];
+  late RepositoryProvider _repositoryProvider;
+  late final RefreshController _refreshController;
+
+  _BookReadHistoriesPage() {
+    _refreshController = RefreshController(_refresh);
+  }
 
   @override
-  void initState() {
-    _refresh();
-    super.initState();
+  void didChangeDependencies() {
+    _repositoryProvider = RepositoryProviderContext.get(context);
+    _refreshController.init(
+      context,
+      [
+        _repositoryProvider.readHistories,
+      ],
+    );
+    super.didChangeDependencies();
+  }
+
+  @override
+  void dispose() {
+    _refreshController.dispose();
+    super.dispose();
   }
 
   _refresh() async {
+    print("Halo notify refresh");
     setState(() {
       _isLoading = true;
     });
 
-    final repository = RepositoryProviderContext.get(context).readHistories;
-    final sessionList = await repository.getAllByBook(widget.bookId);
+    final sessionList =
+        await _repositoryProvider.readHistories.getAllByBook(widget.bookId);
 
     List<BookReadHistoryItem> newList = [];
 
@@ -108,6 +128,7 @@ class _BookReadHistoriesPage extends State<BookReadHistoriesPage> {
       lastSessionDate = session.dateTimeFrom.toDateOnly();
     }
 
+    print("Halo notify refresh selesai ${sessionList.length}");
     setState(() {
       _isLoading = false;
       _list = newList;
@@ -152,8 +173,6 @@ class _BookReadHistoriesPage extends State<BookReadHistoriesPage> {
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           await BookAddEditHistorySheet.showAdd(context, widget.bookId);
-          if (!mounted) return;
-          _refresh();
         },
         child: const Icon(Icons.add),
       ),
@@ -240,13 +259,10 @@ class _BookReadHistoriesPage extends State<BookReadHistoriesPage> {
               ],
             ),
           );
-          if (result == null || !result || !context.mounted) return;
+          if (result == null || !result || !mounted) return;
 
-          final repository = RepositoryProviderContext.get(context).books;
-          await repository.delete(item.session.id!);
+          await _repositoryProvider.readHistories.delete(item.session.id!);
         }
-        if (!context.mounted) return;
-        _refresh();
       },
       child: IntrinsicHeight(
         child: Row(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:readlog/data.dart';
 import 'package:readlog/data_context.dart';
+import 'package:readlog/refresh_controller.dart';
 import 'package:readlog/ui/collection_add_edit.dart';
 import 'package:readlog/ui/collection_books.dart';
 
@@ -14,11 +15,29 @@ class CollectionsPage extends StatefulWidget {
 class _CollectionsPage extends State<CollectionsPage> {
   bool _isLoading = false;
   List<CollectionEntity> _collections = [];
+  late RepositoryProvider _repositoryProvider;
+  late final RefreshController _refreshController;
+
+  _CollectionsPage() {
+    _refreshController = RefreshController(_refresh);
+  }
 
   @override
-  void initState() {
-    _refresh();
-    super.initState();
+  void didChangeDependencies() {
+    _repositoryProvider = RepositoryProviderContext.get(context);
+    _refreshController.init(
+      context,
+      [
+        _repositoryProvider.collections,
+      ],
+    );
+    super.didChangeDependencies();
+  }
+
+  @override
+  void dispose() {
+    _refreshController.dispose();
+    super.dispose();
   }
 
   _refresh() async {
@@ -26,7 +45,7 @@ class _CollectionsPage extends State<CollectionsPage> {
       _isLoading = true;
     });
 
-    final repository = RepositoryProviderContext.get(context).collections;
+    final repository = _repositoryProvider.collections;
     final list = await repository.getAll();
 
     setState(() {
@@ -36,11 +55,9 @@ class _CollectionsPage extends State<CollectionsPage> {
   }
 
   _showAdd() async {
-      int? id = await CollectionAddEditSheet.showAdd(context);
-      if (!mounted || id == null) return;
-      await CollectionBooksPage.show(context, id);
-      if (!mounted) return;
-      _refresh();
+    int? id = await CollectionAddEditSheet.showAdd(context);
+    if (!mounted || id == null) return;
+    await CollectionBooksPage.show(context, id);
   }
 
   @override
@@ -76,8 +93,6 @@ class _CollectionsPage extends State<CollectionsPage> {
         child: InkWell(
           onTap: () async {
             await CollectionBooksPage.show(context, collection.id!);
-            if (!mounted) return;
-            _refresh();
           },
           child: Padding(
             padding: const EdgeInsets.all(8.0),

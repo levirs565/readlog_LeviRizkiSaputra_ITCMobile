@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 class BookEntity {
   final int? id;
   final String title;
@@ -69,7 +71,7 @@ class BookReadStatistic {
   const BookReadStatistic({required this.seconds, required this.pages, required this.books});
 }
 
-abstract interface class BookRepository {
+abstract interface class BookRepository implements Listenable {
   Future<int> add(BookDetailEntity book);
 
   Future<void> update(BookDetailEntity book);
@@ -83,7 +85,7 @@ abstract interface class BookRepository {
   Future<void> delete(int id);
 }
 
-abstract interface class BookReadHistoryRepository {
+abstract interface class BookReadHistoryRepository implements Listenable {
   Future<int> add(BookReadHistoryEntity history);
 
   Future<void> update(BookReadHistoryEntity history);
@@ -99,7 +101,7 @@ abstract interface class BookReadHistoryRepository {
   Future<BookReadStatistic> getStatistic(DateTime fromDay, DateTime toDay);
 }
 
-abstract interface class CollectionRepository {
+abstract interface class CollectionRepository implements Listenable {
   Future<int> add(CollectionEntity collection);
 
   Future<CollectionEntity?> getById(int id);

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:readlog/refresh_controller.dart';
 import 'package:readlog/ui/component/book_list_view.dart';
 
 import '../data.dart';
@@ -16,11 +17,24 @@ class BooksPage extends StatefulWidget {
 class _BooksPageState extends State<BooksPage> {
   bool _isLoading = true;
   List<BookEntity> _list = [];
+  late RepositoryProvider _repositoryProvider;
+  late final RefreshController _refreshController;
+
+  _BooksPageState() {
+    _refreshController = RefreshController(_refresh);
+  }
 
   @override
-  void initState() {
-    _refresh();
-    super.initState();
+  void didChangeDependencies() {
+    _repositoryProvider = RepositoryProviderContext.get(context);
+    _refreshController.init(context, [_repositoryProvider.books, _repositoryProvider.readHistories]);
+    super.didChangeDependencies();
+  }
+
+  @override
+  void dispose() {
+    _refreshController.dispose();
+    super.dispose();
   }
 
   _refresh() async {
@@ -28,8 +42,7 @@ class _BooksPageState extends State<BooksPage> {
       _isLoading = true;
     });
 
-    final bookRepository = RepositoryProviderContext.get(context).books;
-    final newList = await bookRepository.getAll();
+    final newList = await _repositoryProvider.books.getAll();
 
     setState(() {
       _list = newList;
@@ -55,9 +68,6 @@ class _BooksPageState extends State<BooksPage> {
               list: _list,
               onTap: (BookEntity book) async {
                 await BookOverviewPage.show(context, book.id!);
-                if (mounted) {
-                  _refresh();
-                }
               },
             ),
       floatingActionButton: FloatingActionButton(
@@ -65,8 +75,6 @@ class _BooksPageState extends State<BooksPage> {
           int? id = await BookAddEditSheet.showAdd(context);
           if (!context.mounted || id == null) return;
           await BookOverviewPage.show(context, id);
-          if (!context.mounted) return;
-          _refresh();
         },
         child: const Icon(Icons.add),
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:readlog/data.dart';
 import 'package:readlog/data_context.dart';
+import 'package:readlog/refresh_controller.dart';
 import 'package:readlog/ui/collection_add_edit.dart';
 
 import 'book_overview.dart';
@@ -27,11 +28,28 @@ class _CollectionBooksPage extends State<CollectionBooksPage> {
   bool _isLoading = false;
   CollectionEntity? _collection = null;
   List<BookEntity> _books = [];
+  late RepositoryProvider _repositoryProvider;
+  late final RefreshController _refreshController;
+
+  _CollectionBooksPage() {
+    _refreshController = RefreshController(_refresh);
+  }
 
   @override
-  void initState() {
-    _refresh();
-    super.initState();
+  void didChangeDependencies() {
+    _repositoryProvider = RepositoryProviderContext.get(context);
+    _refreshController.init(context, [
+      _repositoryProvider.collections,
+      _repositoryProvider.books,
+      _repositoryProvider.readHistories
+    ]);
+    super.didChangeDependencies();
+  }
+
+  @override
+  void dispose() {
+    _refreshController.dispose();
+    super.dispose();
   }
 
   _refresh() async {
@@ -39,9 +57,8 @@ class _CollectionBooksPage extends State<CollectionBooksPage> {
       _isLoading = true;
     });
 
-    final repositoryProvider = RepositoryProviderContext.get(context);
-    final collection = await repositoryProvider.collections.getById(widget.id);
-    final books = await repositoryProvider.books.getAllByCollection(widget.id);
+    final collection = await _repositoryProvider.collections.getById(widget.id);
+    final books = await _repositoryProvider.books.getAllByCollection(widget.id);
 
     setState(() {
       _isLoading = false;
@@ -64,8 +81,6 @@ class _CollectionBooksPage extends State<CollectionBooksPage> {
             onPressed: () async {
               if (_isLoading) return;
               await CollectionAddEditSheet.showEdit(context, _collection!);
-              if (!mounted) return;
-              _refresh();
             },
             icon: const Icon(Icons.edit),
           ),
@@ -122,9 +137,6 @@ class _CollectionBooksPage extends State<CollectionBooksPage> {
               list: _books,
               onTap: (BookEntity book) async {
                 await BookOverviewPage.show(context, book.id!);
-                if (mounted) {
-                  _refresh();
-                }
               },
             ),
     );
