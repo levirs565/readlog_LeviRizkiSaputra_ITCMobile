@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:readlog/refresh_controller.dart';
-import 'package:readlog/route_observer_provider.dart';
 import 'package:readlog/ui/read_timer.dart';
 
 import '../data.dart';
@@ -77,6 +76,49 @@ class _BookOverviewPage extends State<BookOverviewPage> {
     });
   }
 
+  _edit() async {
+    await BookAddEditSheet.showEdit(context, _book!);
+  }
+
+  _tryDelete() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Delete Confirmation"),
+          content: const Text("Are you sure delete this book?"),
+          actions: [
+            TextButton(
+                style: TextButton.styleFrom(
+                  textStyle: TextTheme.of(context).labelLarge,
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop(false);
+                },
+                child: Text("Cancel")),
+            TextButton(
+                style: TextButton.styleFrom(
+                  textStyle: TextTheme.of(context).labelLarge,
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop(true);
+                },
+                child: Text("OK"))
+          ],
+        );
+      },
+    );
+    if (result != null && result) {
+      final repository = _repositoryProvider.books;
+      await repository.delete(widget.id);
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    }
+  }
+
+  bool get _bookAvailable => !_isLoading && _book != null;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -87,51 +129,12 @@ class _BookOverviewPage extends State<BookOverviewPage> {
             child: _isLoading ? LinearProgressIndicator() : Container()),
         actions: [
           IconButton(
-            onPressed: () async {
-              if (_isLoading || _book == null) return;
-              await BookAddEditSheet.showEdit(context, _book!);
-            },
+            onPressed: !_bookAvailable ? null : _edit,
             icon: const Icon(Icons.edit),
             tooltip: "Edit",
           ),
           IconButton(
-            onPressed: () async {
-              if (_isLoading || _book == null) return;
-              final result = await showDialog<bool>(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: const Text("Delete Confirmation"),
-                    content: const Text("Are you sure delete this book?"),
-                    actions: [
-                      TextButton(
-                          style: TextButton.styleFrom(
-                            textStyle: TextTheme.of(context).labelLarge,
-                          ),
-                          onPressed: () {
-                            Navigator.of(context).pop(false);
-                          },
-                          child: Text("Cancel")),
-                      TextButton(
-                          style: TextButton.styleFrom(
-                            textStyle: TextTheme.of(context).labelLarge,
-                          ),
-                          onPressed: () {
-                            Navigator.of(context).pop(true);
-                          },
-                          child: Text("OK"))
-                    ],
-                  );
-                },
-              );
-              if (result != null && result) {
-                final repository = _repositoryProvider.books;
-                await repository.delete(widget.id);
-                if (context.mounted) {
-                  Navigator.of(context).pop();
-                }
-              }
-            },
+            onPressed: !_bookAvailable ? null : _tryDelete,
             icon: const Icon(Icons.delete),
             tooltip: "Delete",
           )
@@ -189,6 +192,14 @@ class _BookOverviewPage extends State<BookOverviewPage> {
     );
   }
 
+  _showReadingTimer() {
+    BookReadingTimerPage.show(context, widget.id);
+  }
+
+  _showAllReadHistory() {
+    BookReadHistoriesPage.show(context, widget.id);
+  }
+
   Widget _readHistoryContainer(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(16),
@@ -206,16 +217,12 @@ class _BookOverviewPage extends State<BookOverviewPage> {
             spacing: 8,
             children: [
               FilledButton.icon(
-                onPressed: () async {
-                  await BookReadingTimerPage.show(context, widget.id);
-                },
+                onPressed: _showReadingTimer,
                 icon: const Icon(Icons.timer),
                 label: const Text("Reading Timer"),
               ),
               FilledButton(
-                  onPressed: () async {
-                    await BookReadHistoriesPage.show(context, widget.id);
-                  },
+                  onPressed: _showAllReadHistory,
                   child: const Text("Show All"))
             ],
           ),
