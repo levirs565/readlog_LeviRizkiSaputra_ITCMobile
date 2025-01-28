@@ -67,6 +67,51 @@ class _CollectionBooksPage extends State<CollectionBooksPage> {
     });
   }
 
+  bool get _dataAvailable => !_isLoading && _collection != null;
+
+  _edit() {
+    CollectionAddEditSheet.showEdit(context, _collection!);
+  }
+
+  _tryDelete() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Delete Confirmation"),
+          content: const Text(
+              "Are you sure delete this collection? Books in this collection will not removed"),
+          actions: [
+            TextButton(
+                style: TextButton.styleFrom(
+                  textStyle: TextTheme.of(context).labelLarge,
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop(false);
+                },
+                child: Text("Cancel")),
+            TextButton(
+                style: TextButton.styleFrom(
+                  textStyle: TextTheme.of(context).labelLarge,
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop(true);
+                },
+                child: Text("OK"))
+          ],
+        );
+      },
+    );
+    if (!context.mounted) return;
+    if (result != null && result) {
+      final repository = _repositoryProvider.collections;
+      await repository.delete(_collection!.id!);
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -78,53 +123,11 @@ class _CollectionBooksPage extends State<CollectionBooksPage> {
             child: _isLoading ? LinearProgressIndicator() : Container()),
         actions: [
           IconButton(
-            onPressed: () async {
-              if (_isLoading) return;
-              await CollectionAddEditSheet.showEdit(context, _collection!);
-            },
+            onPressed: !_dataAvailable ? null : _edit,
             icon: const Icon(Icons.edit),
           ),
           IconButton(
-            onPressed: () async {
-              if (_isLoading) return;
-              final result = await showDialog<bool>(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    title: const Text("Delete Confirmation"),
-                    content: const Text(
-                        "Are you sure delete this collection? Books in this collection will not removed"),
-                    actions: [
-                      TextButton(
-                          style: TextButton.styleFrom(
-                            textStyle: TextTheme.of(context).labelLarge,
-                          ),
-                          onPressed: () {
-                            Navigator.of(context).pop(false);
-                          },
-                          child: Text("Cancel")),
-                      TextButton(
-                          style: TextButton.styleFrom(
-                            textStyle: TextTheme.of(context).labelLarge,
-                          ),
-                          onPressed: () {
-                            Navigator.of(context).pop(true);
-                          },
-                          child: Text("OK"))
-                    ],
-                  );
-                },
-              );
-              if (!context.mounted) return;
-              if (result != null && result) {
-                final repository =
-                    RepositoryProviderContext.get(context).collections;
-                await repository.delete(_collection!.id!);
-                if (context.mounted) {
-                  Navigator.of(context).pop();
-                }
-              }
-            },
+            onPressed: !_dataAvailable ? null : _tryDelete,
             icon: const Icon(Icons.delete),
           )
         ],
