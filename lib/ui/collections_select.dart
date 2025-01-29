@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:readlog/data.dart';
 import 'package:readlog/data_context.dart';
 import 'package:readlog/ui/component/base_bottom_sheet.dart';
+import 'package:readlog/ui/component/conditional_widget.dart';
 
 class CollectionsSelectSheet extends StatefulWidget {
   final List<CollectionEntity> initials;
@@ -56,6 +57,18 @@ class _CollectionsSelectSheet extends State<CollectionsSelectSheet> {
     });
   }
 
+  _save() {
+    if (_isLoading) return;
+    List<CollectionEntity> result = [];
+    for (var i = 0; i < _collections.length; i++) {
+      if (_isSelected[i]) {
+        result.add(_collections[i]);
+      }
+    }
+
+    Navigator.of(context).pop(result);
+  }
+
   @override
   Widget build(BuildContext context) {
     return BaseBottomSheet(
@@ -69,16 +82,13 @@ class _CollectionsSelectSheet extends State<CollectionsSelectSheet> {
             textAlign: TextAlign.center,
           ),
           Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _collections.length == 0
-                    ? const Center(
-                        child: Text("No collection found"),
-                      )
-                    : ListView.builder(
-                        itemCount: _collections.length,
-                        itemBuilder: _listTile,
-                      ),
+            child: ConditionalWidget(
+              isLoading: _isLoading,
+              isEmpty: _collections.isEmpty,
+              loadingBuilder: _loadingContent,
+              emptyBuilder: _emptyContent,
+              contentBuilder: _content,
+            ),
           ),
           Row(
             spacing: 16,
@@ -91,23 +101,30 @@ class _CollectionsSelectSheet extends State<CollectionsSelectSheet> {
                 child: const Text("Cancel"),
               ),
               FilledButton(
-                onPressed: () {
-                  if (_isLoading) return;
-                  List<CollectionEntity> result = [];
-                  for (var i = 0; i < _collections.length; i++) {
-                    if (_isSelected[i]) {
-                      result.add(_collections[i]);
-                    }
-                  }
-
-                  Navigator.of(context).pop(result);
-                },
+                onPressed: _save,
                 child: const Text("Save"),
               ),
             ],
           )
         ],
       ),
+    );
+  }
+
+  Widget _loadingContent(BuildContext context) {
+    return const Center(child: CircularProgressIndicator());
+  }
+
+  Widget _emptyContent(BuildContext context) {
+    return const Center(
+      child: Text("No collection found"),
+    );
+  }
+
+  Widget _content(BuildContext context) {
+    return ListView.builder(
+      itemCount: _collections.length,
+      itemBuilder: _listTile,
     );
   }
 

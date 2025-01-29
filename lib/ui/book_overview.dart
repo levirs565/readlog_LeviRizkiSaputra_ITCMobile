@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:readlog/refresh_controller.dart';
+import 'package:readlog/ui/component/conditional_widget.dart';
 import 'package:readlog/ui/read_timer.dart';
 
 import '../data.dart';
@@ -122,36 +123,42 @@ class _BookOverviewPage extends State<BookOverviewPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        bottom: PreferredSize(
-            preferredSize: Size.fromHeight(0),
-            child: _isLoading ? LinearProgressIndicator() : Container()),
-        actions: [
-          IconButton(
-            onPressed: !_bookAvailable ? null : _edit,
-            icon: const Icon(Icons.edit),
-            tooltip: "Edit",
-          ),
-          IconButton(
-            onPressed: !_bookAvailable ? null : _tryDelete,
-            icon: const Icon(Icons.delete),
-            tooltip: "Delete",
-          )
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          bottom: PreferredSize(
+              preferredSize: Size.fromHeight(0),
+              child: _isLoading ? LinearProgressIndicator() : Container()),
+          actions: [
+            IconButton(
+              onPressed: !_bookAvailable ? null : _edit,
+              icon: const Icon(Icons.edit),
+              tooltip: "Edit",
+            ),
+            IconButton(
+              onPressed: !_bookAvailable ? null : _tryDelete,
+              icon: const Icon(Icons.delete),
+              tooltip: "Delete",
+            )
+          ],
+        ),
+        body: ConditionalWidget(
+          isLoading: _isLoading,
+          isEmpty: _book == null,
+          contentBuilder: _content,
+        ));
+  }
+
+  Widget _content(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: 16,
+        children: [
+          _detailContainer(context),
+          _readHistoryContainer(context),
+          _readingProgressContainer(context),
         ],
       ),
-      body: _book == null
-          ? null
-          : SingleChildScrollView(
-              child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              spacing: 16,
-              children: [
-                _detailContainer(context),
-                _readHistoryContainer(context),
-                _readingProgressContainer(context),
-              ],
-            )),
     );
   }
 
@@ -200,6 +207,14 @@ class _BookOverviewPage extends State<BookOverviewPage> {
     BookReadHistoriesPage.show(context, widget.id);
   }
 
+  String _getLastReadText(BookReadHistoryEntity entity) {
+    final pageFrom = entity.pageFrom;
+    final pageTo = entity.pageTo;
+    final dateFrom = _dateFormatter.format(_lastRead!.dateTimeFrom);
+    final dateTo = _dateFormatter.format(_lastRead!.dateTimeTo);
+    return "Last read from page $pageFrom to page $pageTo at $dateFrom - $dateTo";
+  }
+
   Widget _readHistoryContainer(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(16),
@@ -209,9 +224,11 @@ class _BookOverviewPage extends State<BookOverviewPage> {
         spacing: 8,
         children: [
           Text("Read History", style: TextTheme.of(context).titleMedium),
-          Text(_lastRead == null
-              ? "No read history yet"
-              : "Last read from page ${_lastRead!.pageFrom} to page ${_lastRead!.pageTo} at ${_dateFormatter.format(_lastRead!.dateTimeFrom)} - ${_dateFormatter.format(_lastRead!.dateTimeTo)}"),
+          Text(
+            _lastRead == null
+                ? "No read history yet"
+                : _getLastReadText(_lastRead!),
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             spacing: 8,
@@ -222,8 +239,9 @@ class _BookOverviewPage extends State<BookOverviewPage> {
                 label: const Text("Reading Timer"),
               ),
               FilledButton(
-                  onPressed: _showAllReadHistory,
-                  child: const Text("Show All"))
+                onPressed: _showAllReadHistory,
+                child: const Text("Show All"),
+              )
             ],
           ),
         ],
@@ -241,9 +259,11 @@ class _BookOverviewPage extends State<BookOverviewPage> {
         children: [
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Text("Reading Progress",
-                textAlign: TextAlign.left,
-                style: TextTheme.of(context).titleMedium),
+            child: Text(
+              "Reading Progress",
+              textAlign: TextAlign.left,
+              style: TextTheme.of(context).titleMedium,
+            ),
           ),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
@@ -256,8 +276,10 @@ class _BookOverviewPage extends State<BookOverviewPage> {
             physics: NeverScrollableScrollPhysics(),
             itemCount: _readingProgress.length,
             padding: EdgeInsets.all(0),
-            itemBuilder: (context, index) =>
-                _readingProgressItem(context, _readingProgress[index]),
+            itemBuilder: (context, index) => _readingProgressItem(
+              context,
+              _readingProgress[index],
+            ),
           )
         ],
       ),
@@ -271,8 +293,9 @@ class _BookOverviewPage extends State<BookOverviewPage> {
           ? Theme.of(context).colorScheme.primaryContainer
           : Theme.of(context).colorScheme.errorContainer,
       padding: EdgeInsets.symmetric(
-          vertical: 8 + ((item.pageTo - item.pageFrom + 1) / 8),
-          horizontal: 16),
+        vertical: 8 + ((item.pageTo - item.pageFrom + 1) / 8),
+        horizontal: 16,
+      ),
       child: Column(
         children: [
           Text(

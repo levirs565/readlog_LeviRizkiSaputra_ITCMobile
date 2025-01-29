@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../data.dart';
 import '../data_context.dart';
 import '../utils.dart';
+import 'component/conditional_widget.dart';
 
 class TimerView extends StatefulWidget {
   final bool isStarted;
@@ -33,7 +34,8 @@ class _TimerView extends State<TimerView> {
       } else {
         final startTime = widget.startTime;
         _timer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
-          final duration = ParsedDuration.fromDuration(DateTime.now().difference(startTime));
+          final duration =
+              ParsedDuration.fromDuration(DateTime.now().difference(startTime));
 
           final minuteSecondStr =
               '${duration.minute.toString().padLeft(2, '0')}:${duration.second.toString().padLeft(2, '0')}';
@@ -77,8 +79,7 @@ class BookReadingTimerPage extends StatefulWidget {
   static Future<void> show(BuildContext context, int bookId) {
     return Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => BookReadingTimerPage(
-            bookId: bookId),
+        builder: (context) => BookReadingTimerPage(bookId: bookId),
       ),
     );
   }
@@ -135,6 +136,28 @@ class _BookReadingTimerPage extends State<BookReadingTimerPage> {
     }
   }
 
+  _trySave() {
+    setState(() {
+      _extraError = "";
+    });
+    if (_formKey.currentState!.validate()) {
+      if (_pageFrom > _pageTo) {
+        setState(() {
+          _extraError = "From page must less than to page";
+        });
+        return;
+      }
+      _saveSession();
+    }
+  }
+
+  _startTimer() {
+    setState(() {
+      _isStarted = true;
+      _timerStartTime = DateTime.now();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -146,73 +169,64 @@ class _BookReadingTimerPage extends State<BookReadingTimerPage> {
         key: _formKey,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            spacing: 16,
-            children: [
-              TextFormField(
-                controller: _pageFromEditingController,
-                validator: stringIsPositiveNumberValidator,
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                decoration: const InputDecoration(
-                    label: Text("Page From"), border: OutlineInputBorder()),
-              ),
-              TextFormField(
-                controller: _pageToEditingController,
-                validator: stringIsPositiveNumberValidator,
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                decoration: const InputDecoration(
-                    label: Text("Page To"), border: OutlineInputBorder()),
-              ),
-              _extraError != null
-                  ? Text(_extraError!,
-                      style: TextTheme.of(context).bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.error,
-                          ))
-                  : Container(),
-              TimerView(
-                isStarted: _isStarted,
-                startTime: _timerStartTime,
-              ),
-              !_isStarted
-                  ? FilledButton.icon(
-                      onPressed: () {
-                        setState(() {
-                          _isStarted = true;
-                          _timerStartTime = DateTime.now();
-                        });
-                      },
-                      icon: const Icon(Icons.play_arrow),
-                      label: const Text("Start"),
-                    )
-                  : FilledButton.icon(
-                      onPressed: _isSaving
-                          ? null
-                          : () {
-                              setState(() {
-                                _extraError = "";
-                              });
-                              if (_formKey.currentState!.validate()) {
-                                if (_pageFrom > _pageTo) {
-                                  setState(() {
-                                    _extraError =
-                                        "From page must less than to page";
-                                  });
-                                  return;
-                                }
-                                _saveSession();
-                              }
-                            },
-                      icon: const Icon(Icons.stop),
-                      label: const Text("Stop"),
-                    )
-            ],
-          ),
+          child: _formContent(context),
         ),
       ),
+    );
+  }
+
+  Widget _formContent(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      spacing: 16,
+      children: [
+        TextFormField(
+          controller: _pageFromEditingController,
+          validator: stringIsPositiveNumberValidator,
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          decoration: const InputDecoration(
+            label: Text("Page From"),
+            border: OutlineInputBorder(),
+          ),
+        ),
+        TextFormField(
+          controller: _pageToEditingController,
+          validator: stringIsPositiveNumberValidator,
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          decoration: const InputDecoration(
+            label: Text("Page To"),
+            border: OutlineInputBorder(),
+          ),
+        ),
+        ConditionalWidget(
+          isLoading: false,
+          isEmpty: _extraError == null,
+          contentBuilder: (context) => Text(
+            _extraError!,
+            style: TextTheme.of(context).bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.error,
+            ),
+          ),
+        ),
+        TimerView(
+          isStarted: _isStarted,
+          startTime: _timerStartTime,
+        ),
+        !_isStarted
+            ? FilledButton.icon(
+                onPressed: _startTimer,
+                icon: const Icon(Icons.play_arrow),
+                label: const Text("Start"),
+              )
+            : FilledButton.icon(
+                onPressed: _isSaving ? null : _trySave,
+                icon: const Icon(Icons.stop),
+                label: const Text("Stop"),
+              )
+      ],
     );
   }
 }

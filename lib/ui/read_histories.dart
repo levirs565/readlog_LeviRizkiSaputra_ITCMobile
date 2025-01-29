@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:readlog/refresh_controller.dart';
+import 'package:readlog/ui/component/conditional_widget.dart';
 import 'package:readlog/ui/read_history_add_edit.dart';
 import 'package:readlog/utils.dart';
 
@@ -145,37 +146,43 @@ class _BookReadHistoriesPage extends State<BookReadHistoriesPage> {
             preferredSize: Size.fromHeight(0),
             child: _isLoading ? LinearProgressIndicator() : Container()),
       ),
-      body: _list.isEmpty
-          ? Center(
-              child: Text("No read history yet",
-                  style: TextTheme.of(context).bodyLarge),
-            )
-          : ListView.builder(
-              itemCount: _list.length,
-              itemBuilder: (BuildContext context, int index) {
-                int circlePositionParam = index == 0
-                    ? -1
-                    : index == _list.length - 1
-                        ? 1
-                        : 0;
-                if (_list[index] is BookReadHistorySessionItem) {
-                  return _listTileSession(
-                      context,
-                      _list[index] as BookReadHistorySessionItem,
-                      circlePositionParam);
-                }
-                return _listTileDate(
-                    context,
-                    _list[index] as BookReadHistoryDateItem,
-                    circlePositionParam);
-              },
-            ),
+      body: ConditionalWidget(
+        isLoading: _isLoading,
+        isEmpty: _list.isEmpty,
+        emptyBuilder: _emptyContent,
+        contentBuilder: _content,
+      ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await BookAddEditHistorySheet.showAdd(context, widget.bookId);
-        },
+        onPressed: () =>
+            BookAddEditHistorySheet.showAdd(context, widget.bookId),
         child: const Icon(Icons.add),
       ),
+    );
+  }
+
+  Widget _emptyContent(BuildContext context) {
+    return Center(
+      child:
+          Text("No read history yet", style: TextTheme.of(context).bodyLarge),
+    );
+  }
+
+  Widget _content(BuildContext context) {
+    return ListView.builder(
+      itemCount: _list.length,
+      itemBuilder: (BuildContext context, int index) {
+        int circlePositionParam = index == 0
+            ? -1
+            : index == _list.length - 1
+                ? 1
+                : 0;
+        if (_list[index] is BookReadHistorySessionItem) {
+          return _listTileSession(context,
+              _list[index] as BookReadHistorySessionItem, circlePositionParam);
+        }
+        return _listTileDate(context, _list[index] as BookReadHistoryDateItem,
+            circlePositionParam);
+      },
     );
   }
 
@@ -205,65 +212,65 @@ class _BookReadHistoriesPage extends State<BookReadHistoriesPage> {
     );
   }
 
+  _tryDelete(BookReadHistoryEntity entity) async {
+    final result = await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Delete Confirmation"),
+        content: const Text("Are you sure delete this reading session?"),
+        actions: [
+          TextButton(
+            style: TextButton.styleFrom(
+              textStyle: TextTheme.of(context).labelLarge,
+            ),
+            onPressed: () {
+              Navigator.of(context).pop(false);
+            },
+            child: Text("Cancel"),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(
+              textStyle: TextTheme.of(context).labelLarge,
+            ),
+            onPressed: () {
+              Navigator.of(context).pop(true);
+            },
+            child: Text("OK"),
+          )
+        ],
+      ),
+    );
+    if (result == null || !result || !mounted) return;
+
+    await _repositoryProvider.readHistories.delete(entity.id!);
+  }
+
+  _showAction(BookReadHistoryEntity entity) async {
+    final result = await BookHistoryActionSheet.show(context);
+    if (result == null || !mounted) return;
+
+    if (result == BookHistoryActionSheetResult.edit) {
+      await BookAddEditHistorySheet.showEdit(context, entity);
+    } else if (result == BookHistoryActionSheetResult.delete) {
+      await _tryDelete(entity);
+    }
+  }
+
   Widget _listTileSession(BuildContext context, BookReadHistorySessionItem item,
       int circlePosition) {
     final timeFrom = _timeFormatter.format(item.session.dateTimeFrom);
     final timeTo = _timeFormatter.format(item.session.dateTimeTo);
     final title = "$timeFrom - $timeTo";
 
-    final durationSeconds =
-        item.session.dateTimeTo.difference(item.session.dateTimeFrom).inSeconds;
-    final showSecond = durationSeconds % Duration.secondsPerMinute;
-    final minute = durationSeconds ~/ Duration.secondsPerMinute;
-    final showMinute = minute % Duration.minutesPerHour;
-    final hour = minute ~/ Duration.minutesPerHour;
-
-    final duration = hour == 0 && minute == 0
-        ? "$showSecond second"
-        : hour == 0
-            ? "$showMinute minute"
-            : "$hour hour $showMinute minute";
+    final parsedDuration = ParsedDuration.fromDuration(
+      item.session.dateTimeTo.difference(item.session.dateTimeFrom),
+    );
+    final duration = parsedDuration.toShortFormattedString();
     final readRange =
         "From page ${item.session.pageFrom} to page ${item.session.pageTo}";
 
     return InkWell(
-      onTap: () async {
-        final result = await BookHistoryActionSheet.show(context);
-        if (result == null || !context.mounted) return;
-
-        if (result == BookHistoryActionSheetResult.edit) {
-          await BookAddEditHistorySheet.showEdit(context, item.session);
-        } else if (result == BookHistoryActionSheetResult.delete) {
-          final result = await showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text("Delete Confirmation"),
-              content: const Text("Are you sure delete this reading session?"),
-              actions: [
-                TextButton(
-                    style: TextButton.styleFrom(
-                      textStyle: TextTheme.of(context).labelLarge,
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).pop(false);
-                    },
-                    child: Text("Cancel")),
-                TextButton(
-                    style: TextButton.styleFrom(
-                      textStyle: TextTheme.of(context).labelLarge,
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).pop(true);
-                    },
-                    child: Text("OK"))
-              ],
-            ),
-          );
-          if (result == null || !result || !mounted) return;
-
-          await _repositoryProvider.readHistories.delete(item.session.id!);
-        }
-      },
+      onTap: () => _showAction(item.session),
       child: IntrinsicHeight(
         child: Row(
           children: [
@@ -327,11 +334,12 @@ class BookHistoryActionSheet extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                  child: Text(
-                    "Action",
-                    style: TextTheme.of(context).titleLarge,
-                  )),
+                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                child: Text(
+                  "Action",
+                  style: TextTheme.of(context).titleLarge,
+                ),
+              ),
               ListTile(
                 leading: const Icon(Icons.edit),
                 title: const Text("Edit"),

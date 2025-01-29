@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:readlog/data.dart';
 import 'package:readlog/data_context.dart';
+import 'package:readlog/ui/component/conditional_widget.dart';
 import 'package:readlog/ui/component/date_time_field.dart';
 import 'package:readlog/utils.dart';
 
@@ -66,9 +67,11 @@ class _RangeStatistic extends State<RangeStatistic> {
               onPressed: _isLoading ? null : _refresh,
               child: const Text("Show"),
             ),
-            _isLoading || _statistic == null
-                ? Container()
-                : _statisticView(context)
+            ConditionalWidget(
+              isLoading: _isLoading,
+              isEmpty: false,
+              contentBuilder: _statisticView,
+            ),
           ],
         ),
       ),
@@ -117,7 +120,6 @@ class _RangeStatistic extends State<RangeStatistic> {
             ),
           ),
         ),
-
         Card(
           child: Padding(
             padding: EdgeInsets.all(16),

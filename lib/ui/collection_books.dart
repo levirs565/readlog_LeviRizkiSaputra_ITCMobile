@@ -3,6 +3,7 @@ import 'package:readlog/data.dart';
 import 'package:readlog/data_context.dart';
 import 'package:readlog/refresh_controller.dart';
 import 'package:readlog/ui/collection_add_edit.dart';
+import 'package:readlog/ui/component/conditional_widget.dart';
 
 import 'book_overview.dart';
 import 'component/book_list_view.dart';
@@ -83,21 +84,23 @@ class _CollectionBooksPage extends State<CollectionBooksPage> {
               "Are you sure delete this collection? Books in this collection will not removed"),
           actions: [
             TextButton(
-                style: TextButton.styleFrom(
-                  textStyle: TextTheme.of(context).labelLarge,
-                ),
-                onPressed: () {
-                  Navigator.of(context).pop(false);
-                },
-                child: Text("Cancel")),
+              style: TextButton.styleFrom(
+                textStyle: TextTheme.of(context).labelLarge,
+              ),
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+              child: Text("Cancel"),
+            ),
             TextButton(
-                style: TextButton.styleFrom(
-                  textStyle: TextTheme.of(context).labelLarge,
-                ),
-                onPressed: () {
-                  Navigator.of(context).pop(true);
-                },
-                child: Text("OK"))
+              style: TextButton.styleFrom(
+                textStyle: TextTheme.of(context).labelLarge,
+              ),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+              child: Text("OK"),
+            )
           ],
         );
       },
@@ -132,16 +135,25 @@ class _CollectionBooksPage extends State<CollectionBooksPage> {
           )
         ],
       ),
-      body: _books.isEmpty
-          ? Center(
-              child: Text("No book found"),
-            )
-          : BookListView(
-              list: _books,
-              onTap: (BookEntity book) async {
-                await BookOverviewPage.show(context, book.id!);
-              },
-            ),
+      body: ConditionalWidget(
+        isLoading: _isLoading,
+        isEmpty: _books.isEmpty,
+        contentBuilder: _content,
+        emptyBuilder: _emptyWidget,
+      ),
+    );
+  }
+
+  Widget _content(BuildContext context) {
+    return BookListView(
+      list: _books,
+      onTap: (BookEntity book) => BookOverviewPage.show(context, book.id!),
+    );
+  }
+
+  Widget _emptyWidget(BuildContext contet) {
+    return Center(
+      child: Text("No book found"),
     );
   }
 }

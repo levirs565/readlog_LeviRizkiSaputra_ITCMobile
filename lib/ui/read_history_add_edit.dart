@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:readlog/ui/component/base_bottom_sheet.dart';
+import 'package:readlog/ui/component/conditional_widget.dart';
 
 import '../data.dart';
 import '../data_context.dart';
@@ -99,106 +101,103 @@ class _BookAddEditHistorySheet extends State<BookAddEditHistorySheet> {
     }
   }
 
+  _trySave() {
+    setState(() {
+      _extraError = null;
+    });
+    if (_formKey.currentState!.validate()) {
+      if (_pageFrom > _pageTo) {
+        setState(() {
+          _extraError = "From page must less than to page";
+        });
+        return;
+      }
+
+      _save();
+    }
+  }
+
+  String? _validateToDateTime(DateTime? dateTime) {
+    final emptyValidator = dateTimeIsNotEmptyValidator(dateTime);
+    if (emptyValidator != null) return emptyValidator;
+    if (_dateFromNotifier.value == null) return null;
+    if (_dateFromNotifier.value!.millisecondsSinceEpoch >
+        dateTime!.millisecondsSinceEpoch) {
+      return "To Date Time must greater than From Date Time";
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return BaseBottomSheet(
       child: Form(
         key: _formKey,
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            16,
-            32,
-            16,
-            32 + MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            spacing: 16,
-            children: [
-              Text(
-                widget.readHistory == null
-                    ? "Add Read History"
-                    : "Edit Read History",
-                style: TextTheme.of(context).titleLarge,
-                textAlign: TextAlign.center,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: 16,
+          children: [
+            Text(
+              widget.readHistory == null
+                  ? "Add Read History"
+                  : "Edit Read History",
+              style: TextTheme.of(context).titleLarge,
+              textAlign: TextAlign.center,
+            ),
+            DateTimeFormField(
+              controller: _dateFromNotifier,
+              decoration: InputDecoration(
+                label: const Text("From Date Time"),
+                border: const OutlineInputBorder(),
               ),
-              DateTimeFormField(
-                controller: _dateFromNotifier,
-                decoration: InputDecoration(
-                  label: const Text("From Date Time"),
-                  border: const OutlineInputBorder(),
-                ),
-                enabled: !_isSaving,
-                validator: dateTimeIsNotEmptyValidator,
+              enabled: !_isSaving,
+              validator: dateTimeIsNotEmptyValidator,
+            ),
+            DateTimeFormField(
+              controller: _dateToNotifier,
+              decoration: InputDecoration(
+                label: const Text("To Date Time"),
+                border: const OutlineInputBorder(),
               ),
-              DateTimeFormField(
-                controller: _dateToNotifier,
-                decoration: InputDecoration(
-                  label: const Text("To Date Time"),
-                  border: const OutlineInputBorder(),
-                ),
-                enabled: !_isSaving,
-                validator: (DateTime? dateTime) {
-                  final emptyValidator = dateTimeIsNotEmptyValidator(dateTime);
-                  if (emptyValidator != null) return emptyValidator;
-                  if (_dateFromNotifier.value == null) return null;
-                  if (_dateFromNotifier.value!.millisecondsSinceEpoch >
-                      dateTime!.millisecondsSinceEpoch) {
-                    return "To Date Time must greater than From Date Time";
-                  }
-                  return null;
-                },
+              enabled: !_isSaving,
+              validator: _validateToDateTime,
+            ),
+            TextFormField(
+              controller: _pageFromEditingController,
+              decoration: InputDecoration(
+                label: const Text("From Page"),
+                border: const OutlineInputBorder(),
               ),
-              TextFormField(
-                controller: _pageFromEditingController,
-                decoration: InputDecoration(
-                  label: const Text("From Page"),
-                  border: const OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                validator: stringIsPositiveNumberValidator,
-                enabled: !_isSaving,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              validator: stringIsPositiveNumberValidator,
+              enabled: !_isSaving,
+            ),
+            TextFormField(
+              controller: _pageToEditingController,
+              decoration: InputDecoration(
+                label: const Text("To Page"),
+                border: const OutlineInputBorder(),
               ),
-              TextFormField(
-                controller: _pageToEditingController,
-                decoration: InputDecoration(
-                  label: const Text("To Page"),
-                  border: const OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                validator: stringIsPositiveNumberValidator,
-                enabled: !_isSaving,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              validator: stringIsPositiveNumberValidator,
+              enabled: !_isSaving,
+            ),
+            ConditionalWidget(
+              isLoading: false,
+              isEmpty: _extraError == null,
+              contentBuilder: (context) => Text(
+                _extraError!,
+                style: TextTheme.of(context).bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
               ),
-              _extraError != null
-                  ? Text(_extraError!,
-                      style: TextTheme.of(context).bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.error,
-                          ))
-                  : Container(),
-              FilledButton(
-                  onPressed: _isSaving
-                      ? null
-                      : () {
-                          setState(() {
-                            _extraError = null;
-                          });
-                          if (_formKey.currentState!.validate()) {
-                            if (_pageFrom > _pageTo) {
-                              setState(() {
-                                _extraError =
-                                    "From page must less than to page";
-                              });
-                              return;
-                            }
-
-                            _save();
-                          }
-                        },
-                  child: Text(widget.readHistory == null ? "Add" : "Save"))
-            ],
-          ),
+            ),
+            FilledButton(
+                onPressed: _isSaving ? null : _trySave,
+                child: Text(widget.readHistory == null ? "Add" : "Save"))
+          ],
         ),
       ),
     );

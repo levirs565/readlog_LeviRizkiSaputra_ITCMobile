@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:readlog/refresh_controller.dart';
 import 'package:readlog/ui/component/book_list_view.dart';
+import 'package:readlog/ui/component/conditional_widget.dart';
 
 import '../data.dart';
 import '../data_context.dart';
@@ -67,20 +68,29 @@ class _BooksPageState extends State<BooksPage> {
             preferredSize: Size.fromHeight(0),
             child: _isLoading ? LinearProgressIndicator() : Container()),
       ),
-      body: _list.isEmpty
-          ? Center(
-              child: Text("No book found"),
-            )
-          : BookListView(
-              list: _list,
-              onTap: (BookEntity book) async {
-                await BookOverviewPage.show(context, book.id!);
-              },
-            ),
+      body: ConditionalWidget(
+        isLoading: _isLoading,
+        isEmpty: _list.isEmpty,
+        contentBuilder: _content,
+        emptyBuilder: _emptyWidget,
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAdd,
         child: const Icon(Icons.add),
       ),
+    );
+  }
+
+  Widget _content(BuildContext context) {
+    return BookListView(
+      list: _list,
+      onTap: (BookEntity book) => BookOverviewPage.show(context, book.id!),
+    );
+  }
+
+  Widget _emptyWidget(BuildContext context) {
+    return Center(
+      child: Text("No book found"),
     );
   }
 }

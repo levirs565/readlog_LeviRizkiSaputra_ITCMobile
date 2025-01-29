@@ -95,6 +95,32 @@ class _WeeklyStatistic extends State<WeeklyStatistic> {
     });
   }
 
+  _prevWeek() {
+    setState(() {
+      _week = _week.getPrevious();
+    });
+    _refresh();
+  }
+
+  _showWeekPicker() async {
+    final result = await WeekScrollPickerDialog.show(
+      context: context,
+      initial: _week,
+    );
+    if (result == null || !context.mounted) return;
+    setState(() {
+      _week = result;
+    });
+    _refresh();
+  }
+
+  _nextWeek() {
+    setState(() {
+      _week = _week.getNext();
+    });
+    _refresh();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -102,86 +128,72 @@ class _WeeklyStatistic extends State<WeeklyStatistic> {
       child: Column(
         spacing: 16.0,
         children: [
-          Row(
-            spacing: 8,
-            children: [
-              IconButton(
-                onPressed: _week.getPrevious().year < 1970
-                    ? null
-                    : () {
-                        setState(() {
-                          _week = _week.getPrevious();
-                        });
-                        _refresh();
-                      },
-                icon: const Icon(Icons.keyboard_arrow_left),
-              ),
-              Spacer(),
-              Text(
-                "Week ${_week.week}, ${_monthNames[_week.month - 1]}, ${_week.year}",
-                style: TextTheme.of(context).bodyLarge,
-              ),
-              IconButton(
-                  onPressed: () async {
-                    final result = await WeekScrollPickerDialog.show(
-                      context: context,
-                      initial: _week,
-                    );
-                    if (result == null || !context.mounted) return;
-                    setState(() {
-                      _week = result;
-                    });
-                    _refresh();
-                  },
-                  icon: const Icon(Icons.arrow_drop_down_sharp)),
-              Spacer(),
-              IconButton(
-                onPressed:
-                    _week.getNext().getFirstDateTime().isAfter(DateTime.now())
-                        ? null
-                        : () {
-                            setState(() {
-                              _week = _week.getNext();
-                            });
-                            _refresh();
-                          },
-                icon: const Icon(Icons.keyboard_arrow_right),
-              ),
-            ],
-          ),
+          _weekController(context),
           Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                spacing: 16,
-                children: [
-                  Text(
-                    "Books Read",
-                    style: TextTheme.of(context).titleLarge,
-                  ),
-                  BarChart(
-                    height: 150,
-                    data: _booksChartData,
-                  ),
-                  Text(
-                    "Pages Read",
-                    style: TextTheme.of(context).titleLarge,
-                  ),
-                  BarChart(
-                    height: 150,
-                    data: _pagesChartData,
-                  ),
-                  Text(
-                    "Read Duration",
-                    style: TextTheme.of(context).titleLarge,
-                  ),
-                  BarChart(
-                    height: 150,
-                    data: _durationChartData,
-                  )
-                ],
-              ),
-            ),
+            child: _body(context),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _weekController(BuildContext context) {
+    return Row(
+      spacing: 8,
+      children: [
+        IconButton(
+          onPressed: _week.getPrevious().year < 1970 ? null : _prevWeek,
+          icon: const Icon(Icons.keyboard_arrow_left),
+        ),
+        Spacer(),
+        Text(
+          "Week ${_week.week}, ${_monthNames[_week.month - 1]}, ${_week.year}",
+          style: TextTheme.of(context).bodyLarge,
+        ),
+        IconButton(
+          onPressed: _showWeekPicker,
+          icon: const Icon(Icons.arrow_drop_down_sharp),
+        ),
+        Spacer(),
+        IconButton(
+          onPressed: _week.getNext().getFirstDateTime().isAfter(DateTime.now())
+              ? null
+              : _nextWeek,
+          icon: const Icon(Icons.keyboard_arrow_right),
+        ),
+      ],
+    );
+  }
+
+  Widget _body(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        spacing: 16,
+        children: [
+          Text(
+            "Books Read",
+            style: TextTheme.of(context).titleLarge,
+          ),
+          BarChart(
+            height: 150,
+            data: _booksChartData,
+          ),
+          Text(
+            "Pages Read",
+            style: TextTheme.of(context).titleLarge,
+          ),
+          BarChart(
+            height: 150,
+            data: _pagesChartData,
+          ),
+          Text(
+            "Read Duration",
+            style: TextTheme.of(context).titleLarge,
+          ),
+          BarChart(
+            height: 150,
+            data: _durationChartData,
+          )
         ],
       ),
     );
