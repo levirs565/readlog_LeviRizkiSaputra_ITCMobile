@@ -127,77 +127,79 @@ class _WeeklyStatistic extends State<WeeklyStatistic> {
 
   @override
   Widget build(BuildContext context) {
+    return Column(
+      children: [
+        _weekController(context),
+        Expanded(
+          child: _body(context),
+        ),
+      ],
+    );
+  }
+
+  Widget _weekController(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: Column(
-        spacing: 16.0,
+      child: Row(
+        spacing: 8,
         children: [
-          _weekController(context),
-          Expanded(
-            child: _body(context),
+          IconButton(
+            onPressed: _prevWeek,
+            icon: const Icon(Icons.keyboard_arrow_left),
+          ),
+          Spacer(),
+          Text(
+            "${_dateFormatShort.format(_firstDay)} - ${_dateFormatShort.format(_lastDay)}",
+            style: TextTheme.of(context).bodyLarge,
+          ),
+          IconButton(
+            onPressed: _showWeekPicker,
+            icon: const Icon(Icons.arrow_drop_down_sharp),
+          ),
+          Spacer(),
+          IconButton(
+            onPressed:
+                _getNextWeekDateTime().isAfter(DateTime.now()) ? null : _nextWeek,
+            icon: const Icon(Icons.keyboard_arrow_right),
           ),
         ],
       ),
     );
   }
 
-  Widget _weekController(BuildContext context) {
-    return Row(
-      spacing: 8,
-      children: [
-        IconButton(
-          onPressed: _prevWeek,
-          icon: const Icon(Icons.keyboard_arrow_left),
-        ),
-        Spacer(),
-        Text(
-          "${_dateFormatShort.format(_firstDay)} - ${_dateFormatShort.format(_lastDay)}",
-          style: TextTheme.of(context).bodyLarge,
-        ),
-        IconButton(
-          onPressed: _showWeekPicker,
-          icon: const Icon(Icons.arrow_drop_down_sharp),
-        ),
-        Spacer(),
-        IconButton(
-          onPressed:
-              _getNextWeekDateTime().isAfter(DateTime.now()) ? null : _nextWeek,
-          icon: const Icon(Icons.keyboard_arrow_right),
-        ),
-      ],
-    );
-  }
-
   Widget _body(BuildContext context) {
     return SingleChildScrollView(
-      child: Column(
-        spacing: 16,
-        children: [
-          Text(
-            "Books Read",
-            style: TextTheme.of(context).titleLarge,
-          ),
-          BarChart(
-            height: 150,
-            data: _booksChartData,
-          ),
-          Text(
-            "Pages Read",
-            style: TextTheme.of(context).titleLarge,
-          ),
-          BarChart(
-            height: 150,
-            data: _pagesChartData,
-          ),
-          Text(
-            "Read Duration",
-            style: TextTheme.of(context).titleLarge,
-          ),
-          BarChart(
-            height: 150,
-            data: _durationChartData,
-          )
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          spacing: 16,
+          children: [
+            Text(
+              "Books Read",
+              style: TextTheme.of(context).titleLarge,
+            ),
+            BarChart(
+              height: 150,
+              data: _booksChartData,
+            ),
+            Text(
+              "Pages Read",
+              style: TextTheme.of(context).titleLarge,
+            ),
+            BarChart(
+              height: 150,
+              data: _pagesChartData,
+            ),
+            Text(
+              "Read Duration",
+              style: TextTheme.of(context).titleLarge,
+            ),
+            BarChart(
+              height: 150,
+              data: _durationChartData,
+            )
+          ],
+        ),
       ),
     );
   }
