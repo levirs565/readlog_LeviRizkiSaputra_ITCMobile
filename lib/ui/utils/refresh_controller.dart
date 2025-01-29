@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:readlog/route_observer_provider.dart';
+import 'package:readlog/ui/utils/route_observer_provider.dart';
 
 class RefreshController with RouteAware {
   RouteObserver? _observer;

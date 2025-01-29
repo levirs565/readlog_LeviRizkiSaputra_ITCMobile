@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:readlog/data/repositories.dart';
 import 'package:readlog/data/context.dart';
-import 'package:readlog/refresh_controller.dart';
+import 'package:readlog/ui/utils/refresh_controller.dart';
 import 'package:readlog/ui/component/bar_chart.dart';
 import 'package:readlog/utils/date_time.dart';
 

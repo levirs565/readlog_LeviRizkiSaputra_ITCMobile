@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:readlog/data/entities.dart';
-import 'package:readlog/refresh_controller.dart';
+import 'package:readlog/ui/utils/refresh_controller.dart';
 import 'package:readlog/ui/component/conditional_widget.dart';
 import 'package:readlog/ui/component/read_history_timeline.dart';
 import 'package:readlog/ui/page/read_history_add_edit.dart';

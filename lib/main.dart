@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:readlog/data/context.dart';
 import 'package:readlog/data/sqlite/sqlite.dart';
-import 'package:readlog/route_observer_provider.dart';
+import 'package:readlog/ui/utils/route_observer_provider.dart';
 import 'package:readlog/ui/page/home.dart';
 import 'package:readlog/ui/theme.dart';
 
