@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:readlog/ui/statistic_range.dart';
+import 'package:readlog/ui/statistic_custom.dart';
 import 'package:readlog/ui/statistic_weekly.dart';
 
 class StatisticsPage extends StatefulWidget {
@@ -25,7 +25,7 @@ class _StatisticsPage extends State<StatisticsPage> {
                 text: "Weekly",
               ),
               Tab(
-                text: "Range",
+                text: "Custom",
               ),
             ],
           ),
@@ -33,7 +33,7 @@ class _StatisticsPage extends State<StatisticsPage> {
         body: const TabBarView(
           children: [
             WeeklyStatistic(),
-            RangeStatistic(),
+            CustomStatistic(),
           ],
         ),
       ),

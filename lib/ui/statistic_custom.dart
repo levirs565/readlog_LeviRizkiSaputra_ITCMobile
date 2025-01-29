@@ -5,14 +5,14 @@ import 'package:readlog/ui/component/conditional_widget.dart';
 import 'package:readlog/ui/component/date_time_field.dart';
 import 'package:readlog/utils.dart';
 
-class RangeStatistic extends StatefulWidget {
-  const RangeStatistic({super.key});
+class CustomStatistic extends StatefulWidget {
+  const CustomStatistic({super.key});
 
   @override
-  State<RangeStatistic> createState() => _RangeStatistic();
+  State<CustomStatistic> createState() => _CustomStatistic();
 }
 
-class _RangeStatistic extends State<RangeStatistic> {
+class _CustomStatistic extends State<CustomStatistic> {
   final ValueNotifier<DateTime?> _fromValueNotifier = ValueNotifier(null);
   final ValueNotifier<DateTime?> _toValueNotifier = ValueNotifier(null);
   bool _isLoading = false;
