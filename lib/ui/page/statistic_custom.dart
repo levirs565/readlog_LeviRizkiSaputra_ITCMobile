@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:readlog/data.dart';
-import 'package:readlog/data_context.dart';
+import 'package:readlog/data/entities.dart';
+import 'package:readlog/data/context.dart';
 import 'package:readlog/ui/component/conditional_widget.dart';
 import 'package:readlog/ui/component/date_time_field.dart';
 import 'package:readlog/utils.dart';

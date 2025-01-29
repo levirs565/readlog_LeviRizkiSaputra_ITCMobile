@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:readlog/data.dart';
-import 'package:readlog/data_context.dart';
+import 'package:readlog/data/entities.dart';
+import 'package:readlog/data/repositories.dart';
+import 'package:readlog/data/context.dart';
 import 'package:readlog/refresh_controller.dart';
 import 'package:readlog/ui/page/collection_add_edit.dart';
 import 'package:readlog/ui/page/collection_books.dart';

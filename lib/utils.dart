@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:readlog/data.dart';
+import 'package:readlog/data/entities.dart';
 
 class BookReadingProgressItem {
   final bool hasRead;

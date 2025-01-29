@@ -1,17 +1,17 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:readlog/data_context.dart';
-import 'package:readlog/data_impl.dart';
+import 'package:readlog/data/context.dart';
+import 'package:readlog/data/sqlite/sqlite.dart';
 import 'package:readlog/route_observer_provider.dart';
 import 'package:readlog/ui/page/home.dart';
 import 'package:readlog/ui/theme.dart';
 
-late RepositoryProviderImpl _repositoryProvider;
+late RepositoryProviderSQLite _repositoryProvider;
 RouteObserver _routeObserver = RouteObserver();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  _repositoryProvider = RepositoryProviderImpl();
+  _repositoryProvider = RepositoryProviderSQLite();
   await _repositoryProvider.open();
   runApp(const MyApp());
 }
