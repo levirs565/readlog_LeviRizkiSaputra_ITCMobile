@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:readlog/data.dart';
 import 'package:readlog/data_context.dart';
 import 'package:readlog/refresh_controller.dart';
+import 'package:readlog/ui/book_add_edit.dart';
 import 'package:readlog/ui/collection_add_edit.dart';
 import 'package:readlog/ui/component/conditional_widget.dart';
 
@@ -115,6 +116,10 @@ class _CollectionBooksPage extends State<CollectionBooksPage> {
     }
   }
 
+  _addBook() {
+    BookAddEditSheet.showAdd(context, collections: [_collection!]);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -140,6 +145,10 @@ class _CollectionBooksPage extends State<CollectionBooksPage> {
         isEmpty: _books.isEmpty,
         contentBuilder: _content,
         emptyBuilder: _emptyWidget,
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _addBook,
+        child: const Icon(Icons.add),
       ),
     );
   }

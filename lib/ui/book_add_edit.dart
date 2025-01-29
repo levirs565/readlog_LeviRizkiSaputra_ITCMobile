@@ -8,21 +8,29 @@ import '../data_context.dart';
 import '../utils.dart';
 
 class BookAddEditSheet extends StatefulWidget {
-  final BookDetailEntity? book;
+  final BookEntity? book;
+  final List<CollectionEntity>? collections;
 
-  const BookAddEditSheet._({super.key, this.book});
+  const BookAddEditSheet._({super.key, this.book, this.collections});
 
-  static Future<int?> showAdd(BuildContext context) {
+  static Future<int?> showAdd(BuildContext context,
+      {List<CollectionEntity>? collections}) {
     return BaseBottomSheet.showModal(
-        context: context, builder: (context) => const BookAddEditSheet._());
+      context: context,
+      builder: (context) => BookAddEditSheet._(
+        collections: collections,
+      ),
+    );
   }
 
   static Future<int?> showEdit(BuildContext context, BookDetailEntity book) {
     return BaseBottomSheet.showModal(
-        context: context,
-        builder: (context) => BookAddEditSheet._(
-              book: book,
-            ));
+      context: context,
+      builder: (context) => BookAddEditSheet._(
+        book: book,
+        collections: book.collections,
+      ),
+    );
   }
 
   @override
@@ -41,7 +49,9 @@ class _BookAddEditSheet extends State<BookAddEditSheet> {
     if (widget.book != null) {
       _titleEditingController.text = widget.book!.title;
       _pageCountEditingController.text = widget.book!.pageCount.toString();
-      _collections = widget.book!.collections.map((el) => el.copy()).toList();
+    }
+    if (widget.collections != null) {
+      _collections = widget.collections!.map((el) => el.copy()).toList();
     }
     super.initState();
   }
