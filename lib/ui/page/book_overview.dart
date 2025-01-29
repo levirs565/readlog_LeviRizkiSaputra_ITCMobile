@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:readlog/data/repositories.dart';
 import 'package:readlog/refresh_controller.dart';
 import 'package:readlog/ui/component/conditional_widget.dart';
+import 'package:readlog/ui/component/reading_progress.dart';
 import 'package:readlog/ui/page/read_timer.dart';
 import 'package:readlog/data/entities.dart';
 import 'package:readlog/data/context.dart';
@@ -66,8 +67,10 @@ class _BookOverviewPage extends State<BookOverviewPage> {
     final book = await _repositoryProvider.books.getById(widget.id);
     final lastRead =
         await _repositoryProvider.readHistories.getLastByBook(widget.id);
-    final coverage = analyzeBookReadingProgress(book!.pageCount,
-        await _repositoryProvider.readHistories.getAllMergedByBook(widget.id));
+    final coverage = ReadingProgress.buildItems(
+      book!.pageCount,
+      await _repositoryProvider.readHistories.getAllMergedByBook(widget.id),
+    );
 
     setState(() {
       _isLoading = false;
@@ -271,38 +274,9 @@ class _BookOverviewPage extends State<BookOverviewPage> {
                 textAlign: TextAlign.left,
                 style: TextTheme.of(context).bodySmall),
           ),
-          ListView.builder(
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            itemCount: _readingProgress.length,
-            padding: EdgeInsets.all(0),
-            itemBuilder: (context, index) => _readingProgressItem(
-              context,
-              _readingProgress[index],
-            ),
+          ReadingProgress(
+            items: _readingProgress,
           )
-        ],
-      ),
-    );
-  }
-
-  Widget _readingProgressItem(
-      BuildContext context, BookReadingProgressItem item) {
-    return Container(
-      color: item.hasRead
-          ? Theme.of(context).colorScheme.primaryContainer
-          : Theme.of(context).colorScheme.errorContainer,
-      padding: EdgeInsets.symmetric(
-        vertical: 8 + ((item.pageTo - item.pageFrom + 1) / 8),
-        horizontal: 16,
-      ),
-      child: Column(
-        children: [
-          Text(
-            "From page ${item.pageFrom} to ${item.pageTo}",
-            style: TextTheme.of(context).bodyMedium,
-          ),
-          Text(item.hasRead ? "Has been read" : "Unread")
         ],
       ),
     );
