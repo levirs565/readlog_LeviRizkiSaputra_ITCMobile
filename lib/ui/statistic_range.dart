@@ -69,7 +69,7 @@ class _RangeStatistic extends State<RangeStatistic> {
             ),
             ConditionalWidget(
               isLoading: _isLoading,
-              isEmpty: false,
+              isEmpty: _statistic == null,
               contentBuilder: _statisticView,
             ),
           ],
