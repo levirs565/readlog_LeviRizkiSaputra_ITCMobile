@@ -4,7 +4,6 @@ import 'package:readlog/data.dart';
 import 'package:readlog/data_context.dart';
 import 'package:readlog/refresh_controller.dart';
 import 'package:readlog/ui/component/bar_chart.dart';
-import 'package:readlog/ui/component/week_scroll_picker.dart';
 import 'package:readlog/utils.dart';
 
 class WeeklyStatistic extends StatefulWidget {
@@ -15,10 +14,10 @@ class WeeklyStatistic extends StatefulWidget {
 }
 
 class _WeeklyStatistic extends State<WeeklyStatistic> {
+  static final _dateFormatShort = DateFormat("dd/MM/yyyy");
   static final _dayDateFormat = DateFormat("E");
   static final _dateDateFormat = DateFormat("dd");
-  static final _monthNames = DateFormat().dateSymbols.MONTHS;
-  WeekDate _week = WeekDate.now();
+  DateTime _firstDay = DateTime.now().getFirstDayOfWeek();
   List<BarChartData> _booksChartData = [];
   List<BarChartData> _pagesChartData = [];
   List<BarChartData> _durationChartData = [];
@@ -63,12 +62,9 @@ class _WeeklyStatistic extends State<WeeklyStatistic> {
     List<BarChartData> booksData = [];
     List<BarChartData> pagesData = [];
     List<BarChartData> durationData = [];
-    final firstDay = _week.getFirstDateTime();
-    final lastDay = _week.getNext().getFirstDateTime(); // exclusive
 
-    for (var day = firstDay.toDateOnly();
-        day.isBefore(lastDay);
-        day = day.add(Duration(days: 1)).toDateOnly()) {
+    for (var i = 0; i < 7; i++) {
+      final day = _firstDay.add(Duration(days: i));
       final statistic = await repository.getStatistic(day, day);
       booksData.add(BarChartData(
         label: _label(day),
@@ -95,28 +91,36 @@ class _WeeklyStatistic extends State<WeeklyStatistic> {
     });
   }
 
+  _getPrevWeekDateTime() => _firstDay.subtract(Duration(days: 7));
+
+  _getNextWeekDateTime() => _firstDay.add(Duration(days: 7));
+
+  get _lastDay => _firstDay.add(Duration(days: 6));
+
   _prevWeek() {
     setState(() {
-      _week = _week.getPrevious();
+      _firstDay = _getPrevWeekDateTime();
     });
     _refresh();
   }
 
   _showWeekPicker() async {
-    final result = await WeekScrollPickerDialog.show(
+    final result = await showDatePicker(
       context: context,
-      initial: _week,
+      firstDate: DateTime(1970),
+      lastDate: DateTime.now(),
+      initialDate: _firstDay,
     );
-    if (result == null || !context.mounted) return;
+    if (result == null) return;
     setState(() {
-      _week = result;
+      _firstDay = result.getFirstDayOfWeek();
     });
     _refresh();
   }
 
   _nextWeek() {
     setState(() {
-      _week = _week.getNext();
+      _firstDay = _getNextWeekDateTime();
     });
     _refresh();
   }
@@ -142,12 +146,12 @@ class _WeeklyStatistic extends State<WeeklyStatistic> {
       spacing: 8,
       children: [
         IconButton(
-          onPressed: _week.getPrevious().year < 1970 ? null : _prevWeek,
+          onPressed: _prevWeek,
           icon: const Icon(Icons.keyboard_arrow_left),
         ),
         Spacer(),
         Text(
-          "Week ${_week.week}, ${_monthNames[_week.month - 1]}, ${_week.year}",
+          "${_dateFormatShort.format(_firstDay)} - ${_dateFormatShort.format(_lastDay)}",
           style: TextTheme.of(context).bodyLarge,
         ),
         IconButton(
@@ -156,9 +160,8 @@ class _WeeklyStatistic extends State<WeeklyStatistic> {
         ),
         Spacer(),
         IconButton(
-          onPressed: _week.getNext().getFirstDateTime().isAfter(DateTime.now())
-              ? null
-              : _nextWeek,
+          onPressed:
+              _getNextWeekDateTime().isAfter(DateTime.now()) ? null : _nextWeek,
           icon: const Icon(Icons.keyboard_arrow_right),
         ),
       ],

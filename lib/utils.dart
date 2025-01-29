@@ -51,6 +51,14 @@ extension ToDateOnly on DateTime {
   }
 }
 
+extension DayOfWeek on DateTime {
+  DateTime getFirstDayOfWeek() {
+    final date = toDateOnly();
+    final dayShift = 1 - date.weekday;
+    return date.add(Duration(days: dayShift));
+  }
+}
+
 int getWeekByDay(int day) => (day / 7).ceil();
 
 class WeekDate {
