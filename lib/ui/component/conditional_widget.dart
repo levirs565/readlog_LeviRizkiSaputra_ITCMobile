@@ -18,6 +18,9 @@ class ConditionalWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading && !isEmpty && loadingBuilder == null) {
+      return contentBuilder(context);
+    }
     if (isLoading) {
       return loadingBuilder != null ? loadingBuilder!(context) : Container();
     }
