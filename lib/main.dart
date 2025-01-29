@@ -5,6 +5,7 @@ import 'package:readlog/data_impl.dart';
 import 'package:readlog/route_observer_provider.dart';
 import 'package:readlog/ui/books.dart';
 import 'package:readlog/ui/home.dart';
+import 'package:readlog/ui/theme.dart';
 
 late RepositoryProviderImpl _repositoryProvider;
 RouteObserver _routeObserver = RouteObserver();
@@ -15,6 +16,8 @@ void main() async {
   await _repositoryProvider.open();
   runApp(const MyApp());
 }
+
+final AppTheme _appTheme = AppTheme();
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -29,10 +32,9 @@ class MyApp extends StatelessWidget {
         child: MaterialApp(
           navigatorObservers: [_routeObserver],
           title: 'Read Log',
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-            useMaterial3: true,
-          ),
+          theme: _appTheme.light(),
+          darkTheme: _appTheme.dark(),
+          themeMode: ThemeMode.system,
           home: const HomePage(),
         ),
       ),
