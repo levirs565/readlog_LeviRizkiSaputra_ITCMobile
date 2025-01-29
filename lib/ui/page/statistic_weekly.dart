@@ -4,7 +4,7 @@ import 'package:readlog/data/repositories.dart';
 import 'package:readlog/data/context.dart';
 import 'package:readlog/refresh_controller.dart';
 import 'package:readlog/ui/component/bar_chart.dart';
-import 'package:readlog/utils.dart';
+import 'package:readlog/utils/date_time.dart';
 
 class WeeklyStatistic extends StatefulWidget {
   const WeeklyStatistic({super.key});

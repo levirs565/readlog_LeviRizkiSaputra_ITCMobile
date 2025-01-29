@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:readlog/data/context.dart';
 import 'package:readlog/data/entities.dart';
-import 'package:readlog/utils.dart';
+import 'package:readlog/ui/utils/validator.dart';
 import 'package:readlog/ui/component/conditional_widget.dart';
+import 'package:readlog/utils/date_time.dart';
 
 class TimerView extends StatefulWidget {
   final bool isStarted;

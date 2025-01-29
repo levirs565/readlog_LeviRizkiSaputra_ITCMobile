@@ -4,7 +4,7 @@ import 'package:readlog/ui/page/collections_select.dart';
 import 'package:readlog/ui/component/base_bottom_sheet.dart';
 import 'package:readlog/data/entities.dart';
 import 'package:readlog/data/context.dart';
-import 'package:readlog/utils.dart';
+import 'package:readlog/ui/utils/validator.dart';
 
 class BookAddEditSheet extends StatefulWidget {
   final BookEntity? book;

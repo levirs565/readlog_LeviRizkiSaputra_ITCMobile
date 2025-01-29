@@ -3,7 +3,7 @@ import 'package:readlog/data/entities.dart';
 import 'package:readlog/data/context.dart';
 import 'package:readlog/ui/component/conditional_widget.dart';
 import 'package:readlog/ui/component/date_time_field.dart';
-import 'package:readlog/utils.dart';
+import 'package:readlog/utils/date_time.dart';
 
 class CustomStatistic extends StatefulWidget {
   const CustomStatistic({super.key});

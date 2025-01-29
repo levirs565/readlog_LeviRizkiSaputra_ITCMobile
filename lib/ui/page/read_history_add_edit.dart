@@ -4,7 +4,7 @@ import 'package:readlog/data/entities.dart';
 import 'package:readlog/ui/component/base_bottom_sheet.dart';
 import 'package:readlog/ui/component/conditional_widget.dart';
 import 'package:readlog/data/context.dart';
-import 'package:readlog/utils.dart';
+import 'package:readlog/ui/utils/validator.dart';
 import 'package:readlog/ui/component/date_time_field.dart';
 
 class BookAddEditHistorySheet extends StatefulWidget {
