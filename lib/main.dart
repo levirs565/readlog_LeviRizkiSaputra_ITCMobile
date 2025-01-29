@@ -13,13 +13,13 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   _repositoryProvider = RepositoryProviderSQLite();
   await _repositoryProvider.open();
-  runApp(const MyApp());
+  runApp(const ReadLogApp());
 }
 
 final AppTheme _appTheme = AppTheme();
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class ReadLogApp extends StatelessWidget {
+  const ReadLogApp({super.key});
 
   // This widget is the root of your application.
   @override
