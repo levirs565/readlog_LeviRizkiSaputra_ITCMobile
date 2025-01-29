@@ -89,6 +89,7 @@ class _BookAddEditHistorySheet extends State<BookAddEditHistorySheet> {
           pageTo: _pageTo));
     } else {
       await repository.update(BookReadHistoryEntity(
+          id: widget.readHistory!.id,
           bookId: widget.readHistory!.bookId,
           dateTimeFrom: _dateFromNotifier.value!,
           dateTimeTo: _dateToNotifier.value!,
