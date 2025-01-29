@@ -75,6 +75,7 @@ class _BooksPageState extends State<BooksPage> {
         emptyBuilder: _emptyWidget,
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: null,
         onPressed: _showAdd,
         child: const Icon(Icons.add),
       ),

@@ -78,6 +78,7 @@ class _CollectionsPage extends State<CollectionsPage> {
         emptyBuilder: _emptyWidget,
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: null,
         onPressed: _showAdd,
         child: const Icon(Icons.add),
       ),
