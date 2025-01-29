@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:readlog/data.dart';
 import 'package:readlog/data_context.dart';
 import 'package:readlog/refresh_controller.dart';
-import 'package:readlog/ui/collection_add_edit.dart';
-import 'package:readlog/ui/collection_books.dart';
-import 'package:readlog/ui/component/conditional_widget.dart';
+import 'package:readlog/ui/page/collection_add_edit.dart';
+import 'package:readlog/ui/page/collection_books.dart';
+import 'package:readlog/ui/component//conditional_widget.dart';
 
 class CollectionsPage extends StatefulWidget {
   const CollectionsPage({super.key});

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:readlog/ui/books.dart';
-import 'package:readlog/ui/collections.dart';
-import 'package:readlog/ui/statistics.dart';
+import 'package:readlog/ui/page/books.dart';
+import 'package:readlog/ui/page/collections.dart';
+import 'package:readlog/ui/page/statistics.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

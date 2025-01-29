@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:readlog/ui/collections_select.dart';
+import 'package:readlog/ui/page/collections_select.dart';
 import 'package:readlog/ui/component/base_bottom_sheet.dart';
-
-import '../data.dart';
-import '../data_context.dart';
-import '../utils.dart';
+import 'package:readlog/data.dart';
+import 'package:readlog/data_context.dart';
+import 'package:readlog/utils.dart';
 
 class BookAddEditSheet extends StatefulWidget {
   final BookEntity? book;

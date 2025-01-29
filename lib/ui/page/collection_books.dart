@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:readlog/data.dart';
 import 'package:readlog/data_context.dart';
 import 'package:readlog/refresh_controller.dart';
-import 'package:readlog/ui/book_add_edit.dart';
-import 'package:readlog/ui/collection_add_edit.dart';
+import 'package:readlog/ui/page/book_add_edit.dart';
+import 'package:readlog/ui/page/collection_add_edit.dart';
 import 'package:readlog/ui/component/conditional_widget.dart';
-
-import 'book_overview.dart';
-import 'component/book_list_view.dart';
+import 'package:readlog/ui/page/book_overview.dart';
+import 'package:readlog/ui/component/book_list_view.dart';
 
 class CollectionBooksPage extends StatefulWidget {
   final int id;

@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:readlog/refresh_controller.dart';
 import 'package:readlog/ui/component/book_list_view.dart';
 import 'package:readlog/ui/component/conditional_widget.dart';
-
-import '../data.dart';
-import '../data_context.dart';
-import 'book_add_edit.dart';
-import 'book_overview.dart';
+import 'package:readlog/data.dart';
+import 'package:readlog/data_context.dart';
+import 'package:readlog/ui/page/book_add_edit.dart';
+import 'package:readlog/ui/page/book_overview.dart';
 
 class BooksPage extends StatefulWidget {
   const BooksPage({super.key});

@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:readlog/refresh_controller.dart';
 import 'package:readlog/ui/component/conditional_widget.dart';
-import 'package:readlog/ui/read_history_add_edit.dart';
+import 'package:readlog/ui/page/read_history_add_edit.dart';
 import 'package:readlog/utils.dart';
-
-import '../data.dart';
-import '../data_context.dart';
-import '../main.dart';
+import 'package:readlog/data.dart';
+import 'package:readlog/data_context.dart';
 
 sealed class BookReadHistoryItem {
   const BookReadHistoryItem();

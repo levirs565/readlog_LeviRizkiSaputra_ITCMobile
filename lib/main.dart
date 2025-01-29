@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:readlog/data_context.dart';
 import 'package:readlog/data_impl.dart';
 import 'package:readlog/route_observer_provider.dart';
-import 'package:readlog/ui/books.dart';
-import 'package:readlog/ui/home.dart';
+import 'package:readlog/ui/page/home.dart';
 import 'package:readlog/ui/theme.dart';
 
 late RepositoryProviderImpl _repositoryProvider;

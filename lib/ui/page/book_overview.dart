@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:readlog/refresh_controller.dart';
 import 'package:readlog/ui/component/conditional_widget.dart';
-import 'package:readlog/ui/read_timer.dart';
-
-import '../data.dart';
-import '../data_context.dart';
-import '../utils.dart';
-import 'book_add_edit.dart';
-import 'read_histories.dart';
+import 'package:readlog/ui/page/read_timer.dart';
+import 'package:readlog/data.dart';
+import 'package:readlog/data_context.dart';
+import 'package:readlog/utils.dart';
+import 'package:readlog/ui/page/book_add_edit.dart';
+import 'package:readlog/ui/page/read_histories.dart';
 
 class BookOverviewPage extends StatefulWidget {
   final int id;
