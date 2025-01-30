@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:readlog/data/entities.dart';
+import 'package:readlog/ui/utils/dialog.dart';
 import 'package:readlog/ui/utils/refresh_controller.dart';
 import 'package:readlog/ui/component/conditional_widget.dart';
 import 'package:readlog/ui/component/read_history_timeline.dart';
@@ -109,34 +110,12 @@ class _BookReadHistoriesPage extends State<BookReadHistoriesPage> {
   }
 
   _tryDelete(BookReadHistoryEntity entity) async {
-    final result = await showDialog(
+    final result = await showConfirmationDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Delete Confirmation"),
-        content: const Text("Are you sure delete this reading session?"),
-        actions: [
-          TextButton(
-            style: TextButton.styleFrom(
-              textStyle: TextTheme.of(context).labelLarge,
-            ),
-            onPressed: () {
-              Navigator.of(context).pop(false);
-            },
-            child: Text("Cancel"),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(
-              textStyle: TextTheme.of(context).labelLarge,
-            ),
-            onPressed: () {
-              Navigator.of(context).pop(true);
-            },
-            child: Text("OK"),
-          )
-        ],
-      ),
+      title: const Text("Delete Confirmation"),
+      content: const Text("Are you sure delete this reading session?"),
     );
-    if (result == null || !result || !mounted) return;
+    if (!result || !mounted) return;
 
     await _repositoryProvider.readHistories.delete(entity.id!);
   }

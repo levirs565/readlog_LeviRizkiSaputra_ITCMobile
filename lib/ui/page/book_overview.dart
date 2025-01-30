@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:readlog/data/repositories.dart';
+import 'package:readlog/ui/utils/dialog.dart';
 import 'package:readlog/ui/utils/refresh_controller.dart';
 import 'package:readlog/ui/component/conditional_widget.dart';
 import 'package:readlog/ui/component/reading_progress.dart';
@@ -84,34 +85,13 @@ class _BookOverviewPage extends State<BookOverviewPage> {
   }
 
   _tryDelete() async {
-    final result = await showDialog<bool>(
+    final result = await showConfirmationDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Delete Confirmation"),
-          content: const Text("Are you sure delete this book?"),
-          actions: [
-            TextButton(
-                style: TextButton.styleFrom(
-                  textStyle: TextTheme.of(context).labelLarge,
-                ),
-                onPressed: () {
-                  Navigator.of(context).pop(false);
-                },
-                child: Text("Cancel")),
-            TextButton(
-                style: TextButton.styleFrom(
-                  textStyle: TextTheme.of(context).labelLarge,
-                ),
-                onPressed: () {
-                  Navigator.of(context).pop(true);
-                },
-                child: Text("OK"))
-          ],
-        );
-      },
+      title: const Text("Delete Confirmation"),
+      content: const Text("Are you sure delete this book?"),
     );
-    if (result != null && result) {
+
+    if (result) {
       final repository = _repositoryProvider.books;
       await repository.delete(widget.id);
       if (mounted) {
