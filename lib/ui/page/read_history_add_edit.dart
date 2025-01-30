@@ -14,9 +14,8 @@ class BookAddEditHistorySheet extends StatefulWidget {
   const BookAddEditHistorySheet._({super.key, this.bookId, this.readHistory});
 
   static Future<void> showAdd(BuildContext context, int bookId) {
-    return showModalBottomSheet<void>(
+    return BaseBottomSheet.showModal(
       context: context,
-      isScrollControlled: true,
       builder: (context) => BookAddEditHistorySheet._(
         bookId: bookId,
       ),
@@ -25,9 +24,8 @@ class BookAddEditHistorySheet extends StatefulWidget {
 
   static Future<void> showEdit(
       BuildContext context, BookReadHistoryEntity readHistory) {
-    return showModalBottomSheet(
+    return BaseBottomSheet.showModal(
       context: context,
-      isScrollControlled: true,
       builder: (context) => BookAddEditHistorySheet._(
         readHistory: readHistory,
       ),
