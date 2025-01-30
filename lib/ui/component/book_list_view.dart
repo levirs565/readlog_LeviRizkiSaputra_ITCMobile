@@ -16,7 +16,7 @@ class BookListView extends StatelessWidget {
   }
 
   Widget _listTile(BuildContext context, BookEntity book) {
-    final readRange = "${book.readedPageCount} of ${book.pageCount} ui read";
+    final readRange = "${book.readedPageCount} of ${book.pageCount} pages read";
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: 0,

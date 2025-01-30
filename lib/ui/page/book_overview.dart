@@ -203,7 +203,7 @@ class _BookOverviewPage extends State<BookOverviewPage> {
                 _book!.title,
                 style: TextTheme.of(context).titleLarge,
               ),
-              Text("${_book!.readedPageCount} of ${_book!.pageCount} ui read"),
+              Text("${_book!.readedPageCount} of ${_book!.pageCount} pages read"),
             ],
           ),
         ),
