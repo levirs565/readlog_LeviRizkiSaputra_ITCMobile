@@ -99,20 +99,36 @@ class _CollectionsPage extends State<CollectionsPage> {
   }
 
   Widget _listTile(BuildContext context, CollectionEntity collection) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: Card(
-        child: InkWell(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        InkWell(
           onTap: () => CollectionBooksPage.show(context, collection.id!),
           child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              collection.name,
-              style: TextTheme.of(context).bodyLarge,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              spacing: 16,
+              children: [
+                Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Theme.of(context).colorScheme.secondaryContainer,
+                    ),
+                    child: Icon(Icons.collections_bookmark, size: 24,)),
+                Text(
+                  collection.name,
+                  style: TextTheme.of(context).bodyLarge,
+                ),
+              ],
             ),
           ),
         ),
-      ),
+        Divider(
+          height: 1,
+        )
+      ],
     );
   }
 }
