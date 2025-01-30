@@ -145,33 +145,42 @@ class _BookOverviewPage extends State<BookOverviewPage> {
     );
   }
 
+  Widget _detailHeader(BuildContext context) {
+    return Row(
+      spacing: 16,
+      children: [
+        ReadingProgressCircular(value: _book!.readPercentage),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _book!.title,
+                style: TextTheme.of(context).titleLarge,
+              ),
+              Text("${_book!.readedPageCount} of ${_book!.pageCount} ui read"),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _detailContainer(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(16),
       color: Theme.of(context).colorScheme.surface,
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: 16,
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ReadingProgressCircular(value: _book!.readPercentage),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _book!.title,
-                  style: TextTheme.of(context).titleLarge,
-                ),
-                Text("${_book!.readedPageCount} of ${_book!.pageCount} ui read"),
-                Wrap(
-                  runSpacing: 4,
-                  spacing: 8,
-                  children: _book!.collections.map((element) {
-                    return Chip(label: Text(element.name));
-                  }).toList(),
-                ),
-              ],
-            ),
+          _detailHeader(context),
+          Wrap(
+            runSpacing: 4,
+            spacing: 8,
+            children: _book!.collections.map((element) {
+              return Chip(label: Text(element.name));
+            }).toList(),
           ),
         ],
       ),
