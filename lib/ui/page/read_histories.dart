@@ -122,29 +122,29 @@ class _BookReadHistoriesPage extends State<BookReadHistoriesPage> {
   }
 
   _showAction(BookReadHistoryEntity entity) async {
-    final result = await BookHistoryActionSheet.show(context);
+    final result = await _ActionSheet.show(context);
     if (result == null || !mounted) return;
 
-    if (result == BookHistoryActionSheetResult.edit) {
+    if (result == _ActionResult.edit) {
       await BookAddEditHistorySheet.showEdit(context, entity);
-    } else if (result == BookHistoryActionSheetResult.delete) {
+    } else if (result == _ActionResult.delete) {
       await _tryDelete(entity);
     }
   }
 }
 
-enum BookHistoryActionSheetResult {
+enum _ActionResult {
   edit,
   delete;
 }
 
-class BookHistoryActionSheet extends StatelessWidget {
-  const BookHistoryActionSheet({super.key});
+class _ActionSheet extends StatelessWidget {
+  const _ActionSheet({super.key});
 
-  static Future<BookHistoryActionSheetResult?> show(BuildContext context) {
+  static Future<_ActionResult?> show(BuildContext context) {
     return BaseBottomSheet.showModal(
       context: context,
-      builder: (context) => BookHistoryActionSheet(),
+      builder: (context) => _ActionSheet(),
     );
   }
 
@@ -163,13 +163,13 @@ class BookHistoryActionSheet extends StatelessWidget {
             leading: const Icon(Icons.edit),
             title: const Text("Edit"),
             onTap: () =>
-                Navigator.of(context).pop(BookHistoryActionSheetResult.edit),
+                Navigator.of(context).pop(_ActionResult.edit),
           ),
           ListTile(
             leading: const Icon(Icons.delete),
             title: const Text("Remove"),
             onTap: () => Navigator.of(context)
-                .pop(BookHistoryActionSheetResult.delete),
+                .pop(_ActionResult.delete),
           )
         ],
       ),
