@@ -34,8 +34,8 @@ class BookOverviewPage extends StatefulWidget {
 class _BookOverviewPage extends State<BookOverviewPage> {
   static final _dateFormatter = DateFormat("dd-MM-yyyy HH:mm");
   bool _isLoading = true;
-  BookDetailEntity? _book = null;
-  BookReadHistoryEntity? _lastRead = null;
+  BookDetailEntity? _book;
+  BookReadHistoryEntity? _lastRead;
   List<BookReadingProgressItem> _readingProgress = [];
   late RepositoryProvider _repositoryProvider;
   late RefreshController _refreshController;

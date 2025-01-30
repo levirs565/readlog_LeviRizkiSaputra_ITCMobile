@@ -16,7 +16,7 @@ class _CustomStatistic extends State<CustomStatistic> {
   final ValueNotifier<DateTime?> _fromValueNotifier = ValueNotifier(null);
   final ValueNotifier<DateTime?> _toValueNotifier = ValueNotifier(null);
   bool _isLoading = false;
-  BookReadStatistic? _statistic = null;
+  BookReadStatistic? _statistic;
 
   @override
   void initState() {

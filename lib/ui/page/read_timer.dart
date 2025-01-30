@@ -6,7 +6,6 @@ import 'package:readlog/data/entities.dart';
 import 'package:readlog/ui/component/timer.dart';
 import 'package:readlog/ui/utils/validator.dart';
 import 'package:readlog/ui/component/conditional_widget.dart';
-import 'package:readlog/utils/date_time.dart';
 
 class BookReadingTimerPage extends StatefulWidget {
   final int bookId;

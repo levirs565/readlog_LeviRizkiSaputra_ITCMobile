@@ -1,4 +1,3 @@
-import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:readlog/data/context.dart';
 import 'package:readlog/data/sqlite/sqlite.dart';

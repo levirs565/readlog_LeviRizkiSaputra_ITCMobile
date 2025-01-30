@@ -32,7 +32,7 @@ class _HomePage extends State<HomePage> {
     _destinations = const [
       _Destination(
         index: 0,
-        navigationDestination: const NavigationDestination(
+        navigationDestination: NavigationDestination(
           icon: Icon(Icons.book_outlined),
           selectedIcon: Icon(Icons.book),
           label: "Books",

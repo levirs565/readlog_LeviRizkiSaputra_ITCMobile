@@ -21,7 +21,7 @@ class _BookMapper {
 }
 
 class BookDataSource extends ChangeNotifier implements BookRepository {
-  Database _db;
+  final Database _db;
 
   BookDataSource(this._db);
 

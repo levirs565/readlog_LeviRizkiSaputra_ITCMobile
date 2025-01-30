@@ -23,6 +23,6 @@ class RepositoryProviderContext extends InheritedWidget {
   }
 
   @override
-  bool updateShouldNotify(RepositoryProviderContext oldContext) =>
-      provider != oldContext.provider;
+  bool updateShouldNotify(RepositoryProviderContext oldWidget) =>
+      provider != oldWidget.provider;
 }

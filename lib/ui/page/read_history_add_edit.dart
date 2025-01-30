@@ -40,7 +40,7 @@ class BookAddEditHistorySheet extends StatefulWidget {
 class _BookAddEditHistorySheet extends State<BookAddEditHistorySheet> {
   final _formKey = GlobalKey<FormState>();
   bool _isSaving = false;
-  String? _extraError = null;
+  String? _extraError;
   final ValueNotifier<DateTime?> _dateFromNotifier = ValueNotifier(null);
   final ValueNotifier<DateTime?> _dateToNotifier = ValueNotifier(null);
   final TextEditingController _pageFromEditingController =

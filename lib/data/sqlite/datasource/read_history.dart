@@ -58,7 +58,6 @@ class BookReadHistoryDataSource extends ChangeNotifier implements BookReadHistor
   @override
   Future<void> delete(int id) async {
     await database.delete(_readHistoryTable, where: "id = ?", whereArgs: [id]);
-    print("Halo notify delete");
     notifyListeners();
   }
 

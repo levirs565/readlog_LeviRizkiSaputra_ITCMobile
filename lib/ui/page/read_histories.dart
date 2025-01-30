@@ -57,7 +57,6 @@ class _BookReadHistoriesPage extends State<BookReadHistoriesPage> {
   }
 
   _refresh() async {
-    print("Halo notify refresh");
     setState(() {
       _isLoading = true;
     });

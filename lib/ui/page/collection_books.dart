@@ -29,7 +29,7 @@ class CollectionBooksPage extends StatefulWidget {
 
 class _CollectionBooksPage extends State<CollectionBooksPage> {
   bool _isLoading = false;
-  CollectionEntity? _collection = null;
+  CollectionEntity? _collection;
   List<BookEntity> _books = [];
   late RepositoryProvider _repositoryProvider;
   late final RefreshController _refreshController;

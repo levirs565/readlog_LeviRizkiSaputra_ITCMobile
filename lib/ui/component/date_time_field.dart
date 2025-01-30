@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 class DateTimeFormField extends FormField<DateTime> {
   final ValueNotifier<DateTime?> controller;
   final InputDecoration decoration;
-  bool dateOnly;
+  final bool dateOnly;
 
   DateTimeFormField({
     super.key,

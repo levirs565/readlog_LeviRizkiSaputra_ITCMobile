@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:readlog/data/entities.dart';
 import 'package:readlog/ui/component/reading_progress_circular.dart';

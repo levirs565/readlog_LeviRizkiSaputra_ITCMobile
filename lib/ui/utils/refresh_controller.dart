@@ -13,14 +13,12 @@ class RefreshController with RouteAware {
 
   @override
   void didPushNext() {
-    print("Halo notify push");
     _isInRoute = false;
     super.didPushNext();
   }
 
   @override
   void didPopNext() {
-    print("Halo notify pop");
     _isInRoute = true;
     if (_needRefresh) {
       doRefresh();
@@ -31,7 +29,6 @@ class RefreshController with RouteAware {
 
 
   void _onNotify() {
-    print("Halo notify $_isInRoute");
     if (_isInRoute) {
       doRefresh();
     } else {
