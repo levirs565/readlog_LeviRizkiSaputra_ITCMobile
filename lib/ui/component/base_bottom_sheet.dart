@@ -17,12 +17,14 @@ class BaseBottomSheet extends StatelessWidget {
   final Widget child;
   final bool scrollable;
   final Future<bool> Function(Object?)? popHandler;
+  final double horizontalPadding;
 
   const BaseBottomSheet({
     super.key,
     required this.child,
     this.scrollable = true,
     this.popHandler,
+    this.horizontalPadding = 16.0
   });
 
   @override
@@ -40,9 +42,9 @@ class BaseBottomSheet extends StatelessWidget {
         children: [
           Padding(
             padding: EdgeInsets.fromLTRB(
-              16,
+              horizontalPadding,
               32,
-              16,
+              horizontalPadding,
               32 + MediaQuery.of(context).viewInsets.bottom,
             ),
             child: child,

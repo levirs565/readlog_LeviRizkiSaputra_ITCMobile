@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:readlog/data/entities.dart';
+import 'package:readlog/ui/component/base_bottom_sheet.dart';
 import 'package:readlog/ui/utils/dialog.dart';
 import 'package:readlog/ui/utils/refresh_controller.dart';
 import 'package:readlog/ui/component/conditional_widget.dart';
@@ -141,7 +142,7 @@ class BookHistoryActionSheet extends StatelessWidget {
   const BookHistoryActionSheet({super.key});
 
   static Future<BookHistoryActionSheetResult?> show(BuildContext context) {
-    return showModalBottomSheet<BookHistoryActionSheetResult>(
+    return BaseBottomSheet.showModal(
       context: context,
       builder: (context) => BookHistoryActionSheet(),
     );
@@ -149,36 +150,29 @@ class BookHistoryActionSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      children: [
-        Padding(
-          padding: EdgeInsets.symmetric(vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                child: Text(
-                  "Action",
-                  style: TextTheme.of(context).titleLarge,
-                ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.edit),
-                title: const Text("Edit"),
-                onTap: () => Navigator.of(context)
-                    .pop(BookHistoryActionSheetResult.edit),
-              ),
-              ListTile(
-                leading: const Icon(Icons.delete),
-                title: const Text("Remove"),
-                onTap: () => Navigator.of(context)
-                    .pop(BookHistoryActionSheetResult.delete),
-              )
-            ],
+    return BaseBottomSheet(
+      horizontalPadding: 0,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            "Action",
+            style: TextTheme.of(context).titleLarge,
           ),
-        )
-      ],
+          ListTile(
+            leading: const Icon(Icons.edit),
+            title: const Text("Edit"),
+            onTap: () =>
+                Navigator.of(context).pop(BookHistoryActionSheetResult.edit),
+          ),
+          ListTile(
+            leading: const Icon(Icons.delete),
+            title: const Text("Remove"),
+            onTap: () => Navigator.of(context)
+                .pop(BookHistoryActionSheetResult.delete),
+          )
+        ],
+      ),
     );
   }
 }
