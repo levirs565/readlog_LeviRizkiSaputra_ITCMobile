@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:readlog/data/repositories.dart';
+import 'package:readlog/ui/component/collection_chip.dart';
 import 'package:readlog/ui/component/reading_progress_circular.dart';
+import 'package:readlog/ui/page/collection_books.dart';
+import 'package:readlog/ui/page/collections.dart';
 import 'package:readlog/ui/utils/dialog.dart';
 import 'package:readlog/ui/utils/refresh_controller.dart';
 import 'package:readlog/ui/component/conditional_widget.dart';
@@ -203,12 +206,17 @@ class _BookOverviewPage extends State<BookOverviewPage> {
                 _book!.title,
                 style: TextTheme.of(context).titleLarge,
               ),
-              Text("${_book!.readedPageCount} of ${_book!.pageCount} pages read"),
+              Text(
+                  "${_book!.readedPageCount} of ${_book!.pageCount} pages read"),
             ],
           ),
         ),
       ],
     );
+  }
+
+  _showCollectionPage(CollectionEntity item) {
+    CollectionBooksPage.show(context, item.id!);
   }
 
   Widget _detailContainer(BuildContext context) {
@@ -220,12 +228,9 @@ class _BookOverviewPage extends State<BookOverviewPage> {
         spacing: 16,
         children: [
           _detailHeader(context),
-          Wrap(
-            runSpacing: 4,
-            spacing: 8,
-            children: _book!.collections.map((element) {
-              return Chip(label: Text(element.name));
-            }).toList(),
+          CollectionChipList(
+            items: _book!.collections,
+            onSelect: _showCollectionPage,
           ),
         ],
       ),

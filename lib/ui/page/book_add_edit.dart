@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:readlog/ui/component/collection_chip.dart';
 import 'package:readlog/ui/page/collections_select.dart';
 import 'package:readlog/ui/component/base_bottom_sheet.dart';
 import 'package:readlog/data/entities.dart';
@@ -127,6 +128,14 @@ class _BookAddEditSheet extends State<BookAddEditSheet> {
     }
   }
 
+  _editCollections() async {
+    final result = await CollectionsSelectSheet.show(context, _collections);
+    if (result == null) return;
+    setState(() {
+      _collections = result;
+    });
+  }
+
   Widget _formContent(BuildContext context) {
     return Column(
       spacing: 16.0,
@@ -157,7 +166,15 @@ class _BookAddEditSheet extends State<BookAddEditSheet> {
           validator: stringIsPositiveNumberValidator,
           enabled: !_isSaving,
         ),
-        _collectionField(context),
+        CollectionChipInput(
+          items: _collections,
+          decoration: InputDecoration(
+            border: const OutlineInputBorder(),
+            label: const Text("Collections"),
+            contentPadding: EdgeInsets.all(8),
+          ),
+          onTap: _isSaving ? null : _editCollections,
+        ),
         FilledButton(
           onPressed: _isSaving ? null : _trySave,
           child: Text(
@@ -165,35 +182,6 @@ class _BookAddEditSheet extends State<BookAddEditSheet> {
           ),
         )
       ],
-    );
-  }
-
-  _editCollections() async {
-    final result = await CollectionsSelectSheet.show(context, _collections);
-    if (result == null) return;
-    setState(() {
-      _collections = result;
-    });
-  }
-
-  Widget _collectionField(BuildContext context) {
-    return GestureDetector(
-      onTap: _isSaving ? null : _editCollections,
-      child: InputDecorator(
-        decoration: InputDecoration(
-          border: const OutlineInputBorder(),
-          label: const Text("Collections"),
-          contentPadding: EdgeInsets.all(8),
-        ),
-        isEmpty: _collections.isEmpty,
-        child: Wrap(
-          spacing: 4,
-          runSpacing: 4,
-          children: _collections.map((collection) {
-            return Chip(label: Text(collection.name));
-          }).toList(),
-        ),
-      ),
     );
   }
 }
