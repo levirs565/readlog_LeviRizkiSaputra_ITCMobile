@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:readlog/data/entities.dart';
 import 'package:readlog/data/context.dart';
+import 'package:readlog/data/repositories.dart';
 import 'package:readlog/ui/component/base_bottom_sheet.dart';
 import 'package:readlog/ui/component/conditional_widget.dart';
+import 'package:readlog/ui/page/collection_add_edit.dart';
+import 'package:readlog/ui/utils/refresh_controller.dart';
 
 class CollectionsSelectSheet extends StatefulWidget {
   final List<CollectionEntity> initials;
@@ -24,14 +27,31 @@ class CollectionsSelectSheet extends StatefulWidget {
 }
 
 class _CollectionsSelectSheet extends State<CollectionsSelectSheet> {
+  bool _hasInitialized = false;
   bool _isLoading = false;
   List<CollectionEntity> _collections = [];
   List<bool> _isSelected = [];
+  late final RefreshController _refreshController;
+  late RepositoryProvider _repositoryProvider;
+
+  _CollectionsSelectSheet() {
+    _refreshController = RefreshController(_refresh);
+  }
 
   @override
-  void initState() {
-    _refresh();
-    super.initState();
+  void didChangeDependencies() {
+    _repositoryProvider = RepositoryProviderContext.get(context);
+    _refreshController.init(
+      context,
+      [_repositoryProvider.collections],
+    );
+    super.didChangeDependencies();
+  }
+
+  @override
+  void dispose() {
+    _refreshController.dispose();
+    super.dispose();
   }
 
   _refresh() async {
@@ -43,7 +63,10 @@ class _CollectionsSelectSheet extends State<CollectionsSelectSheet> {
     final collection = await repository.getAll();
     final isSelected = List<bool>.filled(collection.length, false);
 
-    for (var initial in widget.initials) {
+    final previousSelected = _hasInitialized ? _selectedList : widget.initials;
+    _hasInitialized = true;
+
+    for (var initial in previousSelected) {
       final index = collection.indexWhere((el) => el.id == initial.id);
       if (index >= 0) {
         isSelected[index] = true;
@@ -57,8 +80,7 @@ class _CollectionsSelectSheet extends State<CollectionsSelectSheet> {
     });
   }
 
-  _save() {
-    if (_isLoading) return;
+  List<CollectionEntity> get _selectedList {
     List<CollectionEntity> result = [];
     for (var i = 0; i < _collections.length; i++) {
       if (_isSelected[i]) {
@@ -66,7 +88,17 @@ class _CollectionsSelectSheet extends State<CollectionsSelectSheet> {
       }
     }
 
-    Navigator.of(context).pop(result);
+    return result;
+  }
+
+  _save() {
+    if (_isLoading) return;
+
+    Navigator.of(context).pop(_selectedList);
+  }
+
+  _showAdd() {
+    CollectionAddEditSheet.showAdd(context);
   }
 
   @override
@@ -80,6 +112,10 @@ class _CollectionsSelectSheet extends State<CollectionsSelectSheet> {
             "Select Collections",
             style: TextTheme.of(context).titleLarge,
             textAlign: TextAlign.center,
+          ),
+          FilledButton(
+            onPressed: _isLoading ? null : _showAdd,
+            child: const Text("New Collection"),
           ),
           Expanded(
             child: ConditionalWidget(
