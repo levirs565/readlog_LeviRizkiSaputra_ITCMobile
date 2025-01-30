@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:readlog/data/entities.dart';
+import 'package:readlog/ui/component/reading_progress_circular.dart';
 
 class BookListView extends StatelessWidget {
   final List<BookEntity> list;
@@ -24,10 +25,11 @@ class BookListView extends StatelessWidget {
         InkWell(
           onTap: () => onTap(book),
           child: Padding(
-            padding: EdgeInsets.all(16),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               spacing: 16,
               children: [
+                ReadingProgressCircular(value: book.readPercentage),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,19 +42,9 @@ class BookListView extends StatelessWidget {
                         readRange,
                         style: TextTheme.of(context).bodyMedium,
                       ),
-                      SizedBox(
-                        height: 8,
-                      ),
-                      LinearProgressIndicator(
-                        value: book.readPercentage,
-                      ),
                     ],
                   ),
-                ),
-                Text(
-                  "${(book.readPercentage * 100).round()}%",
-                  style: TextTheme.of(context).titleLarge,
-                ),
+                )
               ],
             ),
           ),

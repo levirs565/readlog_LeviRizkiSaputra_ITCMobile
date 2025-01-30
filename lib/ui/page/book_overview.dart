@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:readlog/data/repositories.dart';
+import 'package:readlog/ui/component/reading_progress_circular.dart';
 import 'package:readlog/ui/utils/dialog.dart';
 import 'package:readlog/ui/utils/refresh_controller.dart';
 import 'package:readlog/ui/component/conditional_widget.dart';
@@ -148,33 +149,29 @@ class _BookOverviewPage extends State<BookOverviewPage> {
     return Container(
       padding: EdgeInsets.all(16),
       color: Theme.of(context).colorScheme.surfaceContainer,
-      child: Column(
+      child: Row(
+        spacing: 16,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            _book!.title,
-            style: TextTheme.of(context).titleLarge,
-          ),
-          Text("${_book!.readedPageCount} of ${_book!.pageCount} ui read"),
-          Padding(
-            padding: EdgeInsets.only(top: 8),
-            child: Row(
-              spacing: 16,
+          ReadingProgressCircular(value: _book!.readPercentage),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                    child: LinearProgressIndicator(
-                  value: _book!.readPercentage,
-                )),
-                Text("${(_book!.readPercentage * 100).round()}%")
+                Text(
+                  _book!.title,
+                  style: TextTheme.of(context).titleLarge,
+                ),
+                Text("${_book!.readedPageCount} of ${_book!.pageCount} ui read"),
+                Wrap(
+                  runSpacing: 4,
+                  spacing: 8,
+                  children: _book!.collections.map((element) {
+                    return Chip(label: Text(element.name));
+                  }).toList(),
+                ),
               ],
             ),
-          ),
-          Wrap(
-            runSpacing: 4,
-            spacing: 8,
-            children: _book!.collections.map((element) {
-              return Chip(label: Text(element.name));
-            }).toList(),
           ),
         ],
       ),
