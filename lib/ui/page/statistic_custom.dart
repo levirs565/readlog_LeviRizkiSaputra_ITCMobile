@@ -81,12 +81,14 @@ class _CustomStatistic extends State<CustomStatistic> {
   Widget _statisticView(BuildContext context) {
     final duration = ParsedDuration.fromSeconds(_statistic!.seconds);
     final durationStr = duration.toShortFormattedString();
+    final cardColor = Theme.of(context).colorScheme.secondaryContainer;
 
     return Column(
       spacing: 16,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Card(
+          color: cardColor,
           child: Padding(
             padding: EdgeInsets.all(16),
             child: Column(
@@ -104,6 +106,7 @@ class _CustomStatistic extends State<CustomStatistic> {
           ),
         ),
         Card(
+          color: cardColor,
           child: Padding(
             padding: EdgeInsets.all(16),
             child: Column(
@@ -121,6 +124,7 @@ class _CustomStatistic extends State<CustomStatistic> {
           ),
         ),
         Card(
+          color: cardColor,
           child: Padding(
             padding: EdgeInsets.all(16),
             child: Column(
