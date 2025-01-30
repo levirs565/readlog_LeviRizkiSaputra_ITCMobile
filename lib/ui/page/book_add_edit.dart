@@ -4,6 +4,7 @@ import 'package:readlog/ui/page/collections_select.dart';
 import 'package:readlog/ui/component/base_bottom_sheet.dart';
 import 'package:readlog/data/entities.dart';
 import 'package:readlog/data/context.dart';
+import 'package:readlog/ui/utils/dialog.dart';
 import 'package:readlog/ui/utils/validator.dart';
 
 class BookAddEditSheet extends StatefulWidget {
@@ -62,6 +63,15 @@ class _BookAddEditSheet extends State<BookAddEditSheet> {
     super.dispose();
   }
 
+  Future<bool> _popHandler(Object? result) async {
+    if (result is int) return true;
+    return showConfirmationDialog(
+      context: context,
+      title: const Text("Close"),
+      content: const Text("Are you sure discarding your changes?"),
+    );
+  }
+
   _save() async {
     setState(() {
       _isSaving = true;
@@ -103,6 +113,7 @@ class _BookAddEditSheet extends State<BookAddEditSheet> {
   @override
   Widget build(BuildContext context) {
     return BaseBottomSheet(
+      popHandler: _popHandler,
       child: Form(
         key: _formKey,
         child: _formContent(context),

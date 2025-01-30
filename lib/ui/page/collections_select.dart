@@ -7,6 +7,8 @@ import 'package:readlog/ui/component/conditional_widget.dart';
 import 'package:readlog/ui/page/collection_add_edit.dart';
 import 'package:readlog/ui/utils/refresh_controller.dart';
 
+import '../utils/dialog.dart';
+
 class CollectionsSelectSheet extends StatefulWidget {
   final List<CollectionEntity> initials;
 
@@ -91,6 +93,15 @@ class _CollectionsSelectSheet extends State<CollectionsSelectSheet> {
     return result;
   }
 
+  Future<bool> _popHandler(Object? result) async {
+    if (result is List<CollectionEntity>) return true;
+    return showConfirmationDialog(
+      context: context,
+      title: const Text("Close"),
+      content: const Text("Are you sure discarding your changed"),
+    );
+  }
+
   _save() {
     if (_isLoading) return;
 
@@ -105,6 +116,7 @@ class _CollectionsSelectSheet extends State<CollectionsSelectSheet> {
   Widget build(BuildContext context) {
     return BaseBottomSheet(
       scrollable: false,
+      popHandler: _popHandler,
       child: Column(
         spacing: 16,
         crossAxisAlignment: CrossAxisAlignment.stretch,

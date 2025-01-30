@@ -4,6 +4,7 @@ import 'package:readlog/data/entities.dart';
 import 'package:readlog/ui/component/base_bottom_sheet.dart';
 import 'package:readlog/ui/component/conditional_widget.dart';
 import 'package:readlog/data/context.dart';
+import 'package:readlog/ui/utils/dialog.dart';
 import 'package:readlog/ui/utils/validator.dart';
 import 'package:readlog/ui/component/date_time_field.dart';
 
@@ -71,14 +72,24 @@ class _BookAddEditHistorySheet extends State<BookAddEditHistorySheet> {
     super.dispose();
   }
 
+  Future<bool> _popHandler(Object? object) async {
+    if (object is int) return true;
+    return showConfirmationDialog(
+      context: context,
+      title: const Text("Close"),
+      content: const Text("Are you sure discarding your changed"),
+    );
+  }
+
   Future<void> _save() async {
     setState(() {
       _isSaving = true;
     });
 
     final repository = RepositoryProviderContext.get(context).readHistories;
+    int? result = widget.readHistory?.id;
     if (widget.readHistory == null) {
-      await repository.add(BookReadHistoryEntity(
+      result = await repository.add(BookReadHistoryEntity(
           bookId: widget.bookId!,
           dateTimeFrom: _dateFromNotifier.value!,
           dateTimeTo: _dateToNotifier.value!,
@@ -95,7 +106,7 @@ class _BookAddEditHistorySheet extends State<BookAddEditHistorySheet> {
     }
 
     if (mounted) {
-      Navigator.pop(context);
+      Navigator.pop(context, result);
     }
   }
 
@@ -129,6 +140,7 @@ class _BookAddEditHistorySheet extends State<BookAddEditHistorySheet> {
   @override
   Widget build(BuildContext context) {
     return BaseBottomSheet(
+      popHandler: _popHandler,
       child: Form(
         key: _formKey,
         child: Column(

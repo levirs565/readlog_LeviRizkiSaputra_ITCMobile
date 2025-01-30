@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:readlog/data/entities.dart';
 import 'package:readlog/data/context.dart';
 import 'package:readlog/ui/component/base_bottom_sheet.dart';
+import 'package:readlog/ui/utils/dialog.dart';
 import 'package:readlog/ui/utils/validator.dart';
 
 class CollectionAddEditSheet extends StatefulWidget {
@@ -49,13 +50,22 @@ class _CollectionAddEditSheet extends State<CollectionAddEditSheet> {
     super.dispose();
   }
 
+  Future<bool> _popHandler(Object? result) async {
+    if (result is int) return true;
+    return showConfirmationDialog(
+      context: context,
+      title: const Text("Close"),
+      content: const Text("Are you sure discarding your changed"),
+    );
+  }
+
   _save() async {
     setState(() {
       _isSaving = true;
     });
 
     final repository = RepositoryProviderContext.get(context).collections;
-    int? result = null;
+    int? result = widget.collection?.id;
 
     if (widget.collection == null) {
       result = await repository.add(
@@ -86,6 +96,7 @@ class _CollectionAddEditSheet extends State<CollectionAddEditSheet> {
   @override
   Widget build(BuildContext context) {
     return BaseBottomSheet(
+      popHandler: _popHandler,
       child: Form(
         key: _formKey,
         child: _formContent(context),
