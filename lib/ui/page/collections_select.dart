@@ -107,13 +107,14 @@ class _CollectionsSelectSheet extends State<CollectionsSelectSheet> {
       scrollable: false,
       child: Column(
         spacing: 16,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
             "Select Collections",
             style: TextTheme.of(context).titleLarge,
             textAlign: TextAlign.center,
           ),
-          FilledButton(
+          OutlinedButton(
             onPressed: _isLoading ? null : _showAdd,
             child: const Text("New Collection"),
           ),
@@ -126,21 +127,9 @@ class _CollectionsSelectSheet extends State<CollectionsSelectSheet> {
               contentBuilder: _content,
             ),
           ),
-          Row(
-            spacing: 16,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text("Cancel"),
-              ),
-              FilledButton(
-                onPressed: _save,
-                child: const Text("Save"),
-              ),
-            ],
+          FilledButton(
+            onPressed: _save,
+            child: const Text("Save"),
           )
         ],
       ),

@@ -96,6 +96,7 @@ class _CollectionAddEditSheet extends State<CollectionAddEditSheet> {
   Widget _formContent(BuildContext context) {
     return Column(
       spacing: 16.0,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
           widget.collection == null ? "Add Collection" : "Edit Collection",
