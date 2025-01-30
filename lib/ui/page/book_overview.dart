@@ -39,9 +39,27 @@ class _BookOverviewPage extends State<BookOverviewPage> {
   List<BookReadingProgressItem> _readingProgress = [];
   late RepositoryProvider _repositoryProvider;
   late RefreshController _refreshController;
+  late final ScrollController _scrollController;
+  bool _isAppBarTitleShown = false;
 
   _BookOverviewPage() {
     _refreshController = RefreshController(_refresh);
+  }
+
+  @override
+  void initState() {
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
+    super.initState();
+  }
+
+  _onScroll() {
+    bool show = _scrollController.position.pixels > 48;
+    if (show != _isAppBarTitleShown) {
+      setState(() {
+        _isAppBarTitleShown = show;
+      });
+    }
   }
 
   @override
@@ -56,6 +74,7 @@ class _BookOverviewPage extends State<BookOverviewPage> {
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _refreshController.dispose();
     super.dispose();
   }
@@ -103,10 +122,35 @@ class _BookOverviewPage extends State<BookOverviewPage> {
 
   bool get _bookAvailable => !_isLoading && _book != null;
 
+  static final _titleHiddenTransform =
+      Transform.translate(offset: Offset(0, 56)).transform;
+  static final _titleShownTransform =
+      Transform.translate(offset: Offset.zero).transform;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
+          toolbarHeight: 56,
+          title: AnimatedContainer(
+            height: 56,
+            duration: Duration(milliseconds: 250),
+            curve: Easing.standard,
+            transform: _isAppBarTitleShown
+                ? _titleShownTransform
+                : _titleHiddenTransform,
+            child: Row(
+              children: [
+                AnimatedOpacity(
+                    duration: Duration(milliseconds: 250),
+                    curve: Easing.standard,
+                    opacity: _isAppBarTitleShown ? 1 : 0,
+                    child: Text(
+                      _book?.title ?? "",
+                    ))
+              ],
+            ),
+          ),
           bottom: PreferredSize(
               preferredSize: Size.fromHeight(0),
               child: _isLoading ? LinearProgressIndicator() : Container()),
@@ -133,6 +177,7 @@ class _BookOverviewPage extends State<BookOverviewPage> {
 
   Widget _content(BuildContext context) {
     return SingleChildScrollView(
+      controller: _scrollController,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: 16,
