@@ -102,7 +102,6 @@ class _BookReadingTimerPage extends State<BookReadingTimerPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text("Reading Timer"),
       ),
       body: Form(

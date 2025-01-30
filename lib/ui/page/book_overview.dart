@@ -107,7 +107,6 @@ class _BookOverviewPage extends State<BookOverviewPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
           bottom: PreferredSize(
               preferredSize: Size.fromHeight(0),
               child: _isLoading ? LinearProgressIndicator() : Container()),
@@ -124,6 +123,7 @@ class _BookOverviewPage extends State<BookOverviewPage> {
             )
           ],
         ),
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
         body: ConditionalWidget(
           isLoading: _isLoading,
           isEmpty: _book == null,
@@ -148,7 +148,7 @@ class _BookOverviewPage extends State<BookOverviewPage> {
   Widget _detailContainer(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(16),
-      color: Theme.of(context).colorScheme.surfaceContainer,
+      color: Theme.of(context).colorScheme.surface,
       child: Row(
         spacing: 16,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -197,7 +197,7 @@ class _BookOverviewPage extends State<BookOverviewPage> {
   Widget _readHistoryContainer(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(16),
-      color: Theme.of(context).colorScheme.surfaceContainer,
+      color: Theme.of(context).colorScheme.surface,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: 8,
@@ -212,15 +212,15 @@ class _BookOverviewPage extends State<BookOverviewPage> {
             mainAxisAlignment: MainAxisAlignment.end,
             spacing: 8,
             children: [
+              OutlinedButton(
+                onPressed: _showAllReadHistory,
+                child: const Text("Show All"),
+              ),
               FilledButton.icon(
                 onPressed: _showReadingTimer,
                 icon: const Icon(Icons.timer),
                 label: const Text("Reading Timer"),
               ),
-              FilledButton(
-                onPressed: _showAllReadHistory,
-                child: const Text("Show All"),
-              )
             ],
           ),
         ],
@@ -231,7 +231,7 @@ class _BookOverviewPage extends State<BookOverviewPage> {
   Widget _readingProgressContainer(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 16, horizontal: 0),
-      color: Theme.of(context).colorScheme.surfaceContainer,
+      color: Theme.of(context).colorScheme.surface,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: 8,

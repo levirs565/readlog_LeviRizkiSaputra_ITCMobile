@@ -62,7 +62,6 @@ class _BooksPageState extends State<BooksPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text("Read Log"),
         bottom: PreferredSize(
             preferredSize: Size.fromHeight(0),

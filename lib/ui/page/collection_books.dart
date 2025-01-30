@@ -101,7 +101,6 @@ class _CollectionBooksPage extends State<CollectionBooksPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(_collection?.name ?? ""),
         bottom: PreferredSize(
             preferredSize: Size.fromHeight(0),

@@ -352,6 +352,11 @@ class AppTheme {
       ),
       scaffoldBackgroundColor: colorScheme.background,
       canvasColor: colorScheme.surface,
+      appBarTheme: AppBarTheme(
+        actionsIconTheme: IconThemeData(
+          color: colorScheme.primary
+        )
+      )
     );
   }
 
