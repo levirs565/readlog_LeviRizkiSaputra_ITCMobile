@@ -72,6 +72,8 @@ class _BookReadingTimerPage extends State<BookReadingTimerPage> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Session has been saved")));
+      _pageFromEditingController.text = "";
+      _pageToEditingController.text = "";
     }
   }
 
@@ -119,24 +121,41 @@ class _BookReadingTimerPage extends State<BookReadingTimerPage> {
       crossAxisAlignment: CrossAxisAlignment.center,
       spacing: 16,
       children: [
-        TextFormField(
-          controller: _pageFromEditingController,
-          validator: stringIsPositiveNumberValidator,
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          decoration: const InputDecoration(
-            label: Text("Page From"),
-            border: OutlineInputBorder(),
-          ),
-        ),
-        TextFormField(
-          controller: _pageToEditingController,
-          validator: stringIsPositiveNumberValidator,
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          decoration: const InputDecoration(
-            label: Text("Page To"),
-            border: OutlineInputBorder(),
+        AnimatedOpacity(
+          duration: Duration(seconds: 1),
+          curve: Easing.standard,
+          opacity: _isStarted ? 1 : 0,
+          child: AnimatedSize(
+            duration: Duration(milliseconds: 500),
+            curve: Easing.standard,
+            alignment: Alignment.topCenter,
+            child: !_isStarted
+                ? Container()
+                : Column(
+                    spacing: 16,
+                    children: [
+                      TextFormField(
+                        controller: _pageFromEditingController,
+                        validator: stringIsPositiveNumberValidator,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                        decoration: const InputDecoration(
+                          label: Text("Page From"),
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      TextFormField(
+                        controller: _pageToEditingController,
+                        validator: stringIsPositiveNumberValidator,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                        decoration: const InputDecoration(
+                          label: Text("Page To"),
+                          border: OutlineInputBorder(),
+                        ),
+                      )
+                    ],
+                  ),
           ),
         ),
         ConditionalWidget(
@@ -145,8 +164,8 @@ class _BookReadingTimerPage extends State<BookReadingTimerPage> {
           contentBuilder: (context) => Text(
             _extraError!,
             style: TextTheme.of(context).bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.error,
-            ),
+                  color: Theme.of(context).colorScheme.error,
+                ),
           ),
         ),
         TimerView(
@@ -154,16 +173,17 @@ class _BookReadingTimerPage extends State<BookReadingTimerPage> {
           startTime: _timerStartTime,
         ),
         !_isStarted
-            ? FilledButton.icon(
+            ? IconButton(
                 onPressed: _startTimer,
                 icon: const Icon(Icons.play_arrow),
-                label: const Text("Start"),
+                iconSize: 48,
+                color: Theme.of(context).colorScheme.primary,
               )
-            : FilledButton.icon(
+            : IconButton(
                 onPressed: _isSaving ? null : _trySave,
                 icon: const Icon(Icons.stop),
-                label: const Text("Stop"),
-              )
+                iconSize: 48,
+                color: Theme.of(context).colorScheme.error)
       ],
     );
   }
