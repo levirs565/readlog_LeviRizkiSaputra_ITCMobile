@@ -29,7 +29,7 @@ class ReadingProgress extends StatelessWidget {
           result.add(BookReadingProgressItem(
               hasRead: false,
               pageFrom: result.last.pageTo + 1,
-              pageTo: range.pageTo - 1));
+              pageTo: range.pageFrom - 1));
         }
         result.add(BookReadingProgressItem(
             hasRead: true, pageFrom: range.pageFrom, pageTo: range.pageTo));
