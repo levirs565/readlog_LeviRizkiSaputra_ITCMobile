@@ -141,7 +141,7 @@ class _WeeklyStatistic extends State<WeeklyStatistic> {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Row(
-        spacing: 8,
+        spacing: 0,
         children: [
           IconButton(
             onPressed: _prevWeek,
